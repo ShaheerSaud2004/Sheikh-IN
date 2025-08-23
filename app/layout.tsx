@@ -9,8 +9,13 @@ export const metadata: Metadata = {
   title: "Sheikh-Din - LinkedIn for Sheikhs",
   description: "Professional networking platform for Islamic scholars and the Muslim community",
   manifest: "/manifest.json",
-  themeColor: "#059669",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  themeColor: '#059669',
 };
 
 export default function RootLayout({

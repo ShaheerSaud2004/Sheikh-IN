@@ -10,7 +10,7 @@ import {
   MessageSquare, 
   Briefcase,
   LogOut,
-  Mosque,
+  Building2,
   Menu,
   X
 } from 'lucide-react'
@@ -35,7 +35,7 @@ export default function Navigation() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/feed" className="flex items-center space-x-2">
-            <Mosque className="h-6 w-6 text-emerald-600" />
+            <Building2 className="h-6 w-6 text-emerald-600" />
             <span className="text-xl font-bold text-gray-800 hidden sm:inline">Sheikh-Din</span>
           </Link>
 

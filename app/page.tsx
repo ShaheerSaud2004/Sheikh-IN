@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { Mosque, Users, Calendar, BookOpen, Star, Search } from 'lucide-react'
+import { Building2, Users, Calendar, BookOpen, Star, Search } from 'lucide-react'
 
 export default function Home() {
   const [isSignUp, setIsSignUp] = useState(false)
@@ -38,7 +38,7 @@ export default function Home() {
       <div className="container mx-auto px-4 py-8">
         <nav className="flex justify-between items-center mb-16">
           <div className="flex items-center space-x-2">
-            <Mosque className="h-8 w-8 text-emerald-600" />
+            <Building2 className="h-8 w-8 text-emerald-600" />
             <span className="text-2xl font-bold text-gray-800">Sheikh-Din</span>
           </div>
         </nav>

@@ -11,7 +11,7 @@ import {
   LANGUAGES, 
   QUALITIES 
 } from '@/lib/constants'
-import { Mosque, ArrowRight, Upload, Plus, X } from 'lucide-react'
+import { Building2, ArrowRight, Upload, Plus, X } from 'lucide-react'
 
 export default function Onboarding() {
   const router = useRouter()
@@ -493,7 +493,7 @@ export default function Onboarding() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-2">
-            <Mosque className="h-8 w-8 text-emerald-600" />
+            <Building2 className="h-8 w-8 text-emerald-600" />
             <span className="text-2xl font-bold text-gray-800">Sheikh-Din</span>
           </div>
           <div className="text-sm text-gray-600">
