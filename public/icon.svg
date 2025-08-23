@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#059669"/>
+  <g fill="#ffffff">
+    <!-- Mosque dome -->
+    <path d="M256 120c-44.2 0-80 35.8-80 80v40h160v-40c0-44.2-35.8-80-80-80z"/>
+    <!-- Minaret -->
+    <rect x="140" y="240" width="40" height="120"/>
+    <rect x="332" y="240" width="40" height="120"/>
+    <!-- Main building -->
+    <rect x="180" y="240" width="152" height="120"/>
+    <!-- Base -->
+    <rect x="120" y="360" width="272" height="32"/>
+    <!-- Crescent moon -->
+    <path d="M256 80c-8.8 0-16-7.2-16-16s7.2-16 16-16c4.4 0 8 3.6 8 8s-3.6 8-8 8c13.3 0 24-10.7 24-24s-10.7-24-24-24c-17.7 0-32 14.3-32 32s14.3 32 32 32z"/>
+  </g>
+</svg>
