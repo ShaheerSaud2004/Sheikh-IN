@@ -1,8 +1,8 @@
 import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { AuthProvider } from '@/contexts/AuthContext'
-import Feed from '@/app/feed/page'
+import { AuthProvider } from '../contexts/AuthContext'
+import Feed from '../app/feed/page'
 
 // Mock the API calls
 const mockFetch = fetch as jest.MockedFunction<typeof fetch>
@@ -145,7 +145,7 @@ describe('Feed System', () => {
       await user.click(screen.getByText('Create Post'))
 
       // Fill in post form
-      await user.type(screen.getByPlaceholder('What would you like to share?'), 'New test post')
+      await user.type(screen.getByLabelText('Content'), 'New test post')
       
       // Submit post
       await user.click(screen.getByText('Post'))
@@ -155,11 +155,16 @@ describe('Feed System', () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer undefined'
+            'Authorization': 'Bearer null'
           },
           body: JSON.stringify({
             content: 'New test post',
-            postType: 'Reminder'
+            postType: 'Reminder',
+            serviceType: '',
+            location: '',
+            date: null,
+            compensation: '',
+            requirements: ''
           })
         })
       })
@@ -298,7 +303,7 @@ describe('Feed System', () => {
       render(<Feed />, { wrapper: TestWrapper })
 
       await user.click(screen.getByText('Create Post'))
-      await user.type(screen.getByPlaceholder('What would you like to share?'), 'Test post')
+      await user.type(screen.getByLabelText('Content'), 'Test post')
       await user.click(screen.getByText('Post'))
 
       await waitFor(() => {

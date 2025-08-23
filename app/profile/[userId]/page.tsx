@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import Navigation from '@/components/Navigation'
@@ -9,7 +9,6 @@ import {
   Book,
   Award,
   Languages,
-  Calendar,
   Globe,
   Phone,
   Mail,
@@ -22,6 +21,43 @@ import {
   Play
 } from 'lucide-react'
 import { format } from 'date-fns'
+
+interface Credential {
+  id: string
+  title: string
+  institution: string
+  year: string
+  description?: string
+  isVerified: boolean
+}
+
+interface Experience {
+  id: string
+  title: string
+  organization: string
+  startDate: string
+  endDate?: string
+  isCurrent: boolean
+  location?: string
+  description?: string
+}
+
+interface Video {
+  id: string
+  title: string
+  videoType: string
+  description?: string
+  views: number
+  createdAt: string
+}
+
+interface Endorsement {
+  id: string
+  endorserName: string
+  endorserTitle?: string
+  content: string
+  qualities: string
+}
 
 interface Profile {
   id: string
@@ -51,10 +87,10 @@ interface Profile {
     email: string
     userType: string
   }
-  credentials: any[]
-  experiences: any[]
-  videos: any[]
-  endorsements: any[]
+  credentials: Credential[]
+  experiences: Experience[]
+  videos: Video[]
+  endorsements: Endorsement[]
 }
 
 export default function ProfilePage() {
@@ -76,23 +112,33 @@ export default function ProfilePage() {
   const userId = params.userId as string
   const isOwnProfile = user?.id === userId
 
-  useEffect(() => {
-    fetchProfile()
-  }, [userId])
-
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     try {
       const response = await fetch(`/api/profile?userId=${userId}`)
       if (response.ok) {
         const data = await response.json()
-        setProfile(data)
+
+        // Ensure arrays are properly initialized
+        const profileWithArrays = {
+          ...data,
+          credentials: Array.isArray(data.credentials) ? data.credentials : [],
+          experiences: Array.isArray(data.experiences) ? data.experiences : [],
+          videos: Array.isArray(data.videos) ? data.videos : [],
+          endorsements: Array.isArray(data.endorsements) ? data.endorsements : [],
+          certifications: Array.isArray(data.certifications) ? data.certifications : []
+        }
+        setProfile(profileWithArrays)
       }
     } catch (error) {
       console.error('Error fetching profile:', error)
     } finally {
       setLoading(false)
     }
-  }
+  }, [userId])
+
+  useEffect(() => {
+    fetchProfile()
+  }, [fetchProfile])
 
   const handleSendProposal = async () => {
     try {
@@ -189,7 +235,7 @@ export default function ProfilePage() {
                         <span>{profile.organizationType}</span>
                       )}
                       {profile.credentials.length > 0 && (
-                        <CheckCircle className="h-4 w-4 text-blue-500" title="Verified" />
+                        <CheckCircle className="h-4 w-4 text-blue-500" />
                       )}
                     </div>
                   </div>
@@ -333,10 +379,12 @@ export default function ProfilePage() {
                           {profile.phone}
                         </div>
                       )}
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <Mail className="h-4 w-4" />
-                        {profile.user.email}
-                      </div>
+                      {profile.user && profile.user.email && (
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <Mail className="h-4 w-4" />
+                          {profile.user.email}
+                        </div>
+                      )}
                       {profile.website && (
                         <div className="flex items-center gap-2 text-gray-600">
                           <Globe className="h-4 w-4" />
@@ -345,6 +393,10 @@ export default function ProfilePage() {
                           </a>
                         </div>
                       )}
+                      {!profile.phone && !profile.user?.email && !profile.website && (
+                        <p className="text-gray-500">No contact information available</p>
+                      )}
+
                     </div>
                   </div>
                 </div>
@@ -353,7 +405,7 @@ export default function ProfilePage() {
               {/* Credentials Tab */}
               {activeTab === 'credentials' && (
                 <div className="space-y-4">
-                  {profile.credentials.length > 0 ? (
+                  {profile.credentials && profile.credentials.length > 0 ? (
                     profile.credentials.map((credential) => (
                       <div key={credential.id} className="border-l-4 border-emerald-600 pl-4">
                         <div className="flex items-start justify-between">
@@ -375,7 +427,7 @@ export default function ProfilePage() {
                     <p className="text-gray-500">No credentials added yet</p>
                   )}
 
-                  {profile.certifications.length > 0 && (
+                  {profile.certifications && profile.certifications.length > 0 && (
                     <div>
                       <h3 className="font-semibold text-gray-900 mb-2">Certifications</h3>
                       <ul className="list-disc list-inside space-y-1">
@@ -391,7 +443,7 @@ export default function ProfilePage() {
               {/* Experience Tab */}
               {activeTab === 'experience' && (
                 <div className="space-y-4">
-                  {profile.experiences.length > 0 ? (
+                  {profile.experiences && profile.experiences.length > 0 ? (
                     profile.experiences.map((exp) => (
                       <div key={exp.id} className="border-l-4 border-gray-300 pl-4">
                         <h4 className="font-semibold text-gray-900">{exp.title}</h4>
@@ -414,7 +466,7 @@ export default function ProfilePage() {
               {/* Videos Tab */}
               {activeTab === 'videos' && (
                 <div className="space-y-4">
-                  {profile.videos.length > 0 ? (
+                  {profile.videos && profile.videos.length > 0 ? (
                     profile.videos.map((video) => (
                       <div key={video.id} className="border rounded-lg p-4">
                         <div className="flex items-start justify-between">
@@ -495,7 +547,7 @@ export default function ProfilePage() {
                 <select
                   value={proposalData.serviceType}
                   onChange={(e) => setProposalData({ ...proposalData, serviceType: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
                   required
                 >
                   <option value="">Select Service</option>
@@ -515,7 +567,7 @@ export default function ProfilePage() {
                   type="date"
                   value={proposalData.eventDate}
                   onChange={(e) => setProposalData({ ...proposalData, eventDate: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
                   required
                 />
               </div>
@@ -528,7 +580,7 @@ export default function ProfilePage() {
                   type="text"
                   value={proposalData.location}
                   onChange={(e) => setProposalData({ ...proposalData, location: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
                   placeholder="Event location"
                   required
                 />
@@ -542,7 +594,7 @@ export default function ProfilePage() {
                   value={proposalData.description}
                   onChange={(e) => setProposalData({ ...proposalData, description: e.target.value })}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
                   placeholder="Describe your event and requirements..."
                   required
                 />
@@ -556,7 +608,7 @@ export default function ProfilePage() {
                   type="text"
                   value={proposalData.budget}
                   onChange={(e) => setProposalData({ ...proposalData, budget: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
                   placeholder="e.g., $200"
                 />
               </div>

@@ -2,12 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getUserFromToken } from '@/lib/auth'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(request.url)
-    const userType = searchParams.get('userType')
-    const location = searchParams.get('location')
-
     const posts = await prisma.post.findMany({
       include: {
         user: {

@@ -62,29 +62,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signIn = async (email: string, password: string) => {
-    const response = await fetch('/api/auth/signin', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email, password })
-    })
+    try {
+      const response = await fetch('/api/auth/signin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      })
 
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.error || 'Sign in failed')
-    }
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Sign in failed')
+      }
 
-    const data = await response.json()
-    setUser(data.user)
-    setToken(data.token)
-    localStorage.setItem('token', data.token)
-    
-    // Redirect based on profile status
-    if (!data.user.profile) {
-      router.push('/onboarding')
-    } else {
-      router.push('/feed')
+      const data = await response.json()
+      setUser(data.user)
+      setToken(data.token)
+      localStorage.setItem('token', data.token)
+      
+      // Redirect based on profile status
+      if (!data.user.profile) {
+        router.push('/onboarding')
+      } else {
+        router.push('/feed')
+      }
+    } catch (error) {
+      // Re-throw the error so it can be caught by the calling component
+      throw error
     }
   }
 

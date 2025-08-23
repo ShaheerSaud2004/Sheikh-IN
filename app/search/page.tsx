@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Navigation from '@/components/Navigation'
 import { 
@@ -10,11 +10,27 @@ import {
   Award,
   Languages,
   Filter,
-  X,
   User,
   CheckCircle
 } from 'lucide-react'
 import { PROFESSIONAL_TYPES, MADHHABS, SERVICE_TYPES, LANGUAGES } from '@/lib/constants'
+
+interface Credential {
+  id: string
+  title: string
+  institution: string
+  year: string
+  description?: string
+  isVerified: boolean
+}
+
+interface Endorsement {
+  id: string
+  endorserName: string
+  endorserTitle?: string
+  content: string
+  qualities: string
+}
 
 interface Profile {
   id: string
@@ -34,8 +50,8 @@ interface Profile {
     id: string
     userType: string
   }
-  credentials: any[]
-  endorsements: any[]
+  credentials: Credential[]
+  endorsements: Endorsement[]
 }
 
 export default function SearchPage() {
@@ -44,6 +60,7 @@ export default function SearchPage() {
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [filteredProfiles, setFilteredProfiles] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [showFilters, setShowFilters] = useState(false)
   
   // Filters
@@ -57,31 +74,33 @@ export default function SearchPage() {
     hasIjazah: false
   })
 
-  useEffect(() => {
-    fetchProfiles()
-  }, [])
-
-  useEffect(() => {
-    applyFilters()
-  }, [searchQuery, filters, profiles])
-
-  const fetchProfiles = async () => {
+  const fetchProfiles = useCallback(async () => {
     try {
+      setError('')
       const response = await fetch('/api/profile')
       if (response.ok) {
         const data = await response.json()
-        const professionals = data.filter((p: Profile) => p.user.userType === 'PROFESSIONAL')
+        const professionals = data.filter((p: Profile) => p.user.userType === 'PROFESSIONAL').map((p: Profile) => ({
+          ...p,
+          languages: Array.isArray(p.languages) ? p.languages : [],
+          specialties: Array.isArray(p.specialties) ? p.specialties : [],
+          credentials: Array.isArray(p.credentials) ? p.credentials : [],
+          endorsements: Array.isArray(p.endorsements) ? p.endorsements : []
+        }))
         setProfiles(professionals)
         setFilteredProfiles(professionals)
+      } else {
+        setError('Error loading search results')
       }
     } catch (error) {
       console.error('Error fetching profiles:', error)
+      setError('Error loading search results')
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const applyFilters = () => {
+  const applyFilters = useCallback(() => {
     let filtered = [...profiles]
 
     // Apply search query
@@ -126,7 +145,15 @@ export default function SearchPage() {
     }
 
     setFilteredProfiles(filtered)
-  }
+  }, [searchQuery, filters, profiles])
+
+  useEffect(() => {
+    fetchProfiles()
+  }, [fetchProfiles])
+
+  useEffect(() => {
+    applyFilters()
+  }, [applyFilters])
 
   const clearFilters = () => {
     setFilters({
@@ -162,7 +189,7 @@ export default function SearchPage() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search for sheikhs, imams, scholars..."
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900"
                   />
                 </div>
               </div>
@@ -192,7 +219,7 @@ export default function SearchPage() {
                     <select
                       value={filters.professionalType}
                       onChange={(e) => setFilters({ ...filters, professionalType: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
                     >
                       <option value="">All Types</option>
                       {Object.entries(PROFESSIONAL_TYPES).map(([key, value]) => (
@@ -208,7 +235,7 @@ export default function SearchPage() {
                     <select
                       value={filters.serviceType}
                       onChange={(e) => setFilters({ ...filters, serviceType: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
                     >
                       <option value="">All Services</option>
                       {Object.entries(SERVICE_TYPES).map(([key, value]) => (
@@ -224,7 +251,7 @@ export default function SearchPage() {
                     <select
                       value={filters.language}
                       onChange={(e) => setFilters({ ...filters, language: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
                     >
                       <option value="">All Languages</option>
                       {LANGUAGES.map(lang => (
@@ -240,7 +267,7 @@ export default function SearchPage() {
                     <select
                       value={filters.madhhab}
                       onChange={(e) => setFilters({ ...filters, madhhab: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
                     >
                       <option value="">All Madhhabs</option>
                       {Object.entries(MADHHABS).map(([key, value]) => (
@@ -258,7 +285,7 @@ export default function SearchPage() {
                       value={filters.location}
                       onChange={(e) => setFilters({ ...filters, location: e.target.value })}
                       placeholder="City or State"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
                     />
                   </div>
 
@@ -302,10 +329,17 @@ export default function SearchPage() {
             Found {filteredProfiles.length} {filteredProfiles.length === 1 ? 'professional' : 'professionals'}
           </div>
 
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-4">
+              {error}
+            </div>
+          )}
+
           {/* Search Results */}
           {loading ? (
             <div className="text-center py-8">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600" role="status"></div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -331,7 +365,7 @@ export default function SearchPage() {
                           )}
                         </div>
                       </div>
-                      {profile.credentials.length > 0 && (
+                      {profile.credentials.some(c => c.isVerified) && (
                         <CheckCircle className="h-5 w-5 text-blue-500" title="Verified Credentials" />
                       )}
                     </div>
@@ -364,7 +398,7 @@ export default function SearchPage() {
                         </div>
                       )}
 
-                      {profile.languages.length > 0 && (
+                      {profile.languages && profile.languages.length > 0 && (
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <Languages className="h-4 w-4" />
                           <span>{profile.languages.slice(0, 3).join(', ')}</span>
@@ -392,7 +426,7 @@ export default function SearchPage() {
                     </div>
 
                     {/* Specialties */}
-                    {profile.specialties.length > 0 && (
+                    {profile.specialties && profile.specialties.length > 0 && (
                       <div className="flex flex-wrap gap-1">
                         {profile.specialties.slice(0, 3).map((specialty) => (
                           <span
@@ -411,7 +445,7 @@ export default function SearchPage() {
                     )}
 
                     {/* Stats */}
-                    {profile.endorsements.length > 0 && (
+                    {profile.endorsements && profile.endorsements.length > 0 && (
                       <div className="mt-4 pt-4 border-t border-gray-100">
                         <span className="text-sm text-gray-600">
                           {profile.endorsements.length} endorsements

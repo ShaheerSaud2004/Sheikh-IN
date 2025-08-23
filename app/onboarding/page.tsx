@@ -4,20 +4,19 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { 
-  USER_TYPES, 
   PROFESSIONAL_TYPES, 
   MADHHABS, 
   SERVICE_TYPES, 
-  LANGUAGES, 
-  QUALITIES 
+  LANGUAGES
 } from '@/lib/constants'
-import { Building2, ArrowRight, Upload, Plus, X } from 'lucide-react'
+import { Building2, ArrowRight, Plus, X } from 'lucide-react'
 
 export default function Onboarding() {
   const router = useRouter()
   const { user, token, updateUser } = useAuth()
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   
   // Form data
   const [formData, setFormData] = useState({
@@ -82,6 +81,7 @@ export default function Onboarding() {
 
   const handleSubmit = async () => {
     setLoading(true)
+    setError('')
     
     try {
       const response = await fetch('/api/profile', {
@@ -94,7 +94,8 @@ export default function Onboarding() {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to create profile')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to create profile')
       }
 
       const profile = await response.json()
@@ -102,7 +103,7 @@ export default function Onboarding() {
       router.push('/feed')
     } catch (error) {
       console.error('Error creating profile:', error)
-      alert('Failed to create profile. Please try again.')
+      setError('Failed to create profile. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -116,43 +117,46 @@ export default function Onboarding() {
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Basic Information</h2>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
                 Full Name *
               </label>
               <input
                 type="text"
+                id="name"
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-2">
                 Bio
               </label>
               <textarea
+                id="bio"
                 name="bio"
                 value={formData.bio}
                 onChange={handleInputChange}
                 rows={4}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
                 placeholder="Tell us about yourself..."
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
                 Location *
               </label>
               <input
                 type="text"
+                id="location"
                 name="location"
                 value={formData.location}
                 onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
                 placeholder="City, State"
                 required
               />
@@ -160,57 +164,61 @@ export default function Onboarding() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
                   Phone
                 </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                />
+                                    <input
+                      id="phone"
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
+                    />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="website" className="block text-sm font-medium text-gray-700 mb-2">
                   Website
                 </label>
-                <input
-                  type="url"
-                  name="website"
-                  value={formData.website}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                />
+                                    <input
+                      id="website"
+                      type="url"
+                      name="website"
+                      value={formData.website}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
+                    />
               </div>
             </div>
 
             {user?.userType === 'ORGANIZATION' && (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="organizationName" className="block text-sm font-medium text-gray-700 mb-2">
                     Organization Name *
                   </label>
                   <input
+                    id="organizationName"
                     type="text"
                     name="organizationName"
                     value={formData.organizationName}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="organizationType" className="block text-sm font-medium text-gray-700 mb-2">
                     Organization Type *
                   </label>
                   <select
+                    id="organizationType"
                     name="organizationType"
                     value={formData.organizationType}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
                     required
                   >
                     <option value="">Select Type</option>
@@ -244,7 +252,7 @@ export default function Onboarding() {
                 name="professionalType"
                 value={formData.professionalType}
                 onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
                 required
               >
                 <option value="">Select Type</option>
@@ -262,7 +270,7 @@ export default function Onboarding() {
                 name="madhhab"
                 value={formData.madhhab}
                 onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
               >
                 <option value="">Select Madhhab</option>
                 {Object.entries(MADHHABS).map(([key, value]) => (
@@ -325,7 +333,7 @@ export default function Onboarding() {
                   name="travelRadius"
                   value={formData.travelRadius}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
                 />
               </div>
 
@@ -338,7 +346,7 @@ export default function Onboarding() {
                   name="hourlyRate"
                   value={formData.hourlyRate}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
                   placeholder="Optional"
                 />
               </div>
@@ -402,7 +410,7 @@ export default function Onboarding() {
                   value={formData.ijazahDetails}
                   onChange={handleInputChange}
                   rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
                   placeholder="Describe your ijazah, chain of narration, etc."
                 />
               </div>
@@ -417,7 +425,7 @@ export default function Onboarding() {
                 name="seminary"
                 value={formData.seminary}
                 onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
                 placeholder="Where did you study?"
               />
             </div>
@@ -431,7 +439,7 @@ export default function Onboarding() {
                 name="yearsExperience"
                 value={formData.yearsExperience}
                 onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
               />
             </div>
 
@@ -511,6 +519,13 @@ export default function Onboarding() {
 
         {/* Form */}
         <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-4">
+              {error}
+            </div>
+          )}
+
           {renderStep()}
 
           {/* Navigation */}

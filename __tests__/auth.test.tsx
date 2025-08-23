@@ -1,8 +1,8 @@
 import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { AuthProvider, useAuth } from '@/contexts/AuthContext'
-import Home from '@/app/page'
+import { AuthProvider, useAuth } from '../contexts/AuthContext'
+import Home from '../app/page'
 
 // Mock the API calls
 const mockFetch = fetch as jest.MockedFunction<typeof fetch>
@@ -60,16 +60,15 @@ describe('Authentication System', () => {
       await user.click(signUpButton)
 
       // Fill in form
-      await user.type(screen.getByPlaceholder('your@email.com'), 'test@example.com')
-      await user.type(screen.getByPlaceholder('••••••••'), 'password123')
+      await user.type(screen.getByLabelText('Email'), 'test@example.com')
+      await user.type(screen.getByLabelText('Password'), 'password123')
       
       // Select user type
-      const userTypeSelect = screen.getByDisplayValue('Individual Seeking Services')
-      await user.click(userTypeSelect)
-      await user.click(screen.getByText('Islamic Professional (Sheikh/Imam/Scholar)'))
+      const userTypeSelect = screen.getByLabelText('I am a...')
+      await user.selectOptions(userTypeSelect, 'PROFESSIONAL')
 
       // Submit form
-      const submitButton = screen.getByText('Create Account')
+      const submitButton = screen.getByRole('button', { name: 'Create Account' })
       await user.click(submitButton)
 
       await waitFor(() => {
@@ -102,11 +101,11 @@ describe('Authentication System', () => {
       await user.click(signUpButton)
 
       // Fill in form
-      await user.type(screen.getByPlaceholder('your@email.com'), 'existing@example.com')
-      await user.type(screen.getByPlaceholder('••••••••'), 'password123')
+      await user.type(screen.getByLabelText('Email'), 'existing@example.com')
+      await user.type(screen.getByLabelText('Password'), 'password123')
       
       // Submit form
-      const submitButton = screen.getByText('Create Account')
+      const submitButton = screen.getByRole('button', { name: 'Create Account' })
       await user.click(submitButton)
 
       await waitFor(() => {
@@ -124,7 +123,7 @@ describe('Authentication System', () => {
       await user.click(signUpButton)
 
       // Try to submit without filling fields
-      const submitButton = screen.getByText('Create Account')
+      const submitButton = screen.getByRole('button', { name: 'Create Account' })
       await user.click(submitButton)
 
       // Check that form validation prevents submission
@@ -152,8 +151,8 @@ describe('Authentication System', () => {
       render(<Home />, { wrapper: TestWrapper })
 
       // Fill in form
-      await user.type(screen.getByPlaceholder('your@email.com'), 'test@example.com')
-      await user.type(screen.getByPlaceholder('••••••••'), 'password123')
+      await user.type(screen.getByLabelText('Email'), 'test@example.com')
+      await user.type(screen.getByLabelText('Password'), 'password123')
 
       // Submit form
       const submitButton = screen.getByText('Sign In')
@@ -184,8 +183,8 @@ describe('Authentication System', () => {
       render(<Home />, { wrapper: TestWrapper })
 
       // Fill in form
-      await user.type(screen.getByPlaceholder('your@email.com'), 'wrong@example.com')
-      await user.type(screen.getByPlaceholder('••••••••'), 'wrongpassword')
+      await user.type(screen.getByLabelText('Email'), 'wrong@example.com')
+      await user.type(screen.getByLabelText('Password'), 'wrongpassword')
 
       // Submit form
       const submitButton = screen.getByText('Sign In')
@@ -204,8 +203,8 @@ describe('Authentication System', () => {
       render(<Home />, { wrapper: TestWrapper })
 
       // Fill in form
-      await user.type(screen.getByPlaceholder('your@email.com'), 'test@example.com')
-      await user.type(screen.getByPlaceholder('••••••••'), 'password123')
+      await user.type(screen.getByLabelText('Email'), 'test@example.com')
+      await user.type(screen.getByLabelText('Password'), 'password123')
 
       // Submit form
       const submitButton = screen.getByText('Sign In')

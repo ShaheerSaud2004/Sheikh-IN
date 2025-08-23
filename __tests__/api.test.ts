@@ -1,14 +1,14 @@
 import { NextRequest } from 'next/server'
-import { POST as signupHandler } from '@/app/api/auth/signup/route'
-import { POST as signinHandler } from '@/app/api/auth/signin/route'
-import { GET as meHandler } from '@/app/api/auth/me/route'
-import { POST as profileHandler, GET as profileGetHandler } from '@/app/api/profile/route'
-import { POST as postsHandler, GET as postsGetHandler } from '@/app/api/posts/route'
-import { GET as searchHandler } from '@/app/api/search/route'
-import { POST as proposalsHandler, GET as proposalsGetHandler, PATCH as proposalsPatchHandler } from '@/app/api/proposals/route'
+import { POST as signupHandler } from '../app/api/auth/signup/route'
+import { POST as signinHandler } from '../app/api/auth/signin/route'
+import { GET as meHandler } from '../app/api/auth/me/route'
+import { POST as profileHandler, GET as profileGetHandler } from '../app/api/profile/route'
+import { POST as postsHandler, GET as postsGetHandler } from '../app/api/posts/route'
+import { GET as searchHandler } from '../app/api/search/route'
+import { POST as proposalsHandler, GET as proposalsGetHandler, PATCH as proposalsPatchHandler } from '../app/api/proposals/route'
 
 // Mock Prisma
-jest.mock('@/lib/prisma', () => ({
+jest.mock('../lib/prisma', () => ({
   prisma: {
     user: {
       findUnique: jest.fn(),
@@ -34,7 +34,7 @@ jest.mock('@/lib/prisma', () => ({
 }))
 
 // Mock auth functions
-jest.mock('@/lib/auth', () => ({
+jest.mock('../lib/auth', () => ({
   hashPassword: jest.fn(() => Promise.resolve('hashed-password')),
   verifyPassword: jest.fn(() => Promise.resolve(true)),
   generateToken: jest.fn(() => 'mock-token'),
@@ -46,8 +46,8 @@ jest.mock('@/lib/auth', () => ({
   })),
 }))
 
-const { prisma } = require('@/lib/prisma')
-const { hashPassword, verifyPassword, generateToken, verifyToken, getUserFromToken } = require('@/lib/auth')
+const { prisma } = require('../lib/prisma')
+const { hashPassword, verifyPassword, generateToken, verifyToken, getUserFromToken } = require('../lib/auth')
 
 describe('API Endpoints', () => {
   beforeEach(() => {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { Prisma, Madhhab, ProfessionalType } from '@prisma/client'
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,7 +13,7 @@ export async function GET(request: NextRequest) {
     const professionalType = searchParams.get('professionalType')
 
     // Build where clause
-    const where: any = {
+    const where: Prisma.ProfileWhereInput = {
       user: {
         userType: 'PROFESSIONAL'
       }
@@ -20,22 +21,22 @@ export async function GET(request: NextRequest) {
 
     if (query) {
       where.OR = [
-        { name: { contains: query, mode: 'insensitive' } },
-        { bio: { contains: query, mode: 'insensitive' } },
-        { seminary: { contains: query, mode: 'insensitive' } }
+        { name: { contains: query } },
+        { bio: { contains: query } },
+        { seminary: { contains: query } }
       ]
     }
 
     if (location) {
-      where.location = { contains: location, mode: 'insensitive' }
+      where.location = { contains: location }
     }
 
-    if (madhhab) {
-      where.madhhab = madhhab
+    if (madhhab && Object.values(Madhhab).includes(madhhab as Madhhab)) {
+      where.madhhab = madhhab as Madhhab
     }
 
-    if (professionalType) {
-      where.professionalType = professionalType
+    if (professionalType && Object.values(ProfessionalType).includes(professionalType as ProfessionalType)) {
+      where.professionalType = professionalType as ProfessionalType
     }
 
     const profiles = await prisma.profile.findMany({

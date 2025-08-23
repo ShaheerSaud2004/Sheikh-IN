@@ -13,7 +13,8 @@ import {
   Users,
   BookOpen,
   Plus,
-  X
+  X,
+  Briefcase
 } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -43,9 +44,10 @@ interface Post {
 }
 
 export default function Feed() {
-  const { user, token } = useAuth()
+  const { token } = useAuth()
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [showCreatePost, setShowCreatePost] = useState(false)
   const [newPost, setNewPost] = useState({
     content: '',
@@ -63,13 +65,17 @@ export default function Feed() {
 
   const fetchPosts = async () => {
     try {
+      setError('')
       const response = await fetch('/api/posts')
       if (response.ok) {
         const data = await response.json()
         setPosts(data)
+      } else {
+        setError('Error loading posts')
       }
     } catch (error) {
       console.error('Error fetching posts:', error)
+      setError('Error loading posts')
     } finally {
       setLoading(false)
     }
@@ -77,6 +83,7 @@ export default function Feed() {
 
   const handleCreatePost = async () => {
     try {
+      setError('')
       const response = await fetch('/api/posts', {
         method: 'POST',
         headers: {
@@ -102,9 +109,13 @@ export default function Feed() {
           compensation: '',
           requirements: ''
         })
+      } else {
+        const errorData = await response.json()
+        setError(errorData.error || 'Failed to create post')
       }
     } catch (error) {
       console.error('Error creating post:', error)
+      setError('Failed to create post')
     }
   }
 
@@ -175,7 +186,7 @@ export default function Feed() {
                     <select
                       value={newPost.postType}
                       onChange={(e) => setNewPost({ ...newPost, postType: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
                     >
                       <option value="Reminder">Islamic Reminder</option>
                       <option value="Opportunity">Job Opportunity</option>
@@ -185,14 +196,15 @@ export default function Feed() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
                       Content
                     </label>
                     <textarea
+                      id="content"
                       value={newPost.content}
                       onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
                       rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
                       placeholder="What would you like to share?"
                     />
                   </div>
@@ -206,7 +218,7 @@ export default function Feed() {
                         <select
                           value={newPost.serviceType}
                           onChange={(e) => setNewPost({ ...newPost, serviceType: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
                         >
                           <option value="">Select Service</option>
                           <option value="NIKAH">Nikah</option>
@@ -227,7 +239,7 @@ export default function Feed() {
                           type="text"
                           value={newPost.location}
                           onChange={(e) => setNewPost({ ...newPost, location: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
                           placeholder="City, State"
                         />
                       </div>
@@ -240,7 +252,7 @@ export default function Feed() {
                           type="date"
                           value={newPost.date}
                           onChange={(e) => setNewPost({ ...newPost, date: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
                         />
                       </div>
 
@@ -252,7 +264,7 @@ export default function Feed() {
                           type="text"
                           value={newPost.compensation}
                           onChange={(e) => setNewPost({ ...newPost, compensation: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
                           placeholder="e.g., $200"
                         />
                       </div>
@@ -265,7 +277,7 @@ export default function Feed() {
                           value={newPost.requirements}
                           onChange={(e) => setNewPost({ ...newPost, requirements: e.target.value })}
                           rows={2}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 text-gray-900"
                           placeholder="Any specific requirements?"
                         />
                       </div>
@@ -292,10 +304,22 @@ export default function Feed() {
             </div>
           )}
 
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-4">
+              {error}
+            </div>
+          )}
+
           {/* Posts Feed */}
           {loading ? (
             <div className="text-center py-8">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600" role="status"></div>
+            </div>
+          ) : posts.length === 0 ? (
+            <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No posts found</h3>
+              <p className="text-gray-600">Be the first to share something with the community!</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -330,7 +354,12 @@ export default function Feed() {
                                 {post.user.profile.location}
                               </span>
                             )}
-                            <span>{format(new Date(post.createdAt), 'MMM d')}</span>
+                            <span>
+                              {post.createdAt && !isNaN(new Date(post.createdAt).getTime()) 
+                                ? format(new Date(post.createdAt), 'MMM d')
+                                : 'Recently'
+                              }
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -407,6 +436,3 @@ export default function Feed() {
     </div>
   )
 }
-
-// Add missing import
-import { Briefcase } from 'lucide-react'

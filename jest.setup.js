@@ -23,6 +23,10 @@ jest.mock('next/navigation', () => ({
 // Mock fetch globally
 global.fetch = jest.fn()
 
+// Mock Request and Response
+global.Request = jest.fn()
+global.Response = jest.fn()
+
 // Mock localStorage
 const localStorageMock = {
   getItem: jest.fn(),
@@ -30,7 +34,10 @@ const localStorageMock = {
   removeItem: jest.fn(),
   clear: jest.fn(),
 }
-global.localStorage = localStorageMock
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock,
+  writable: true
+})
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {

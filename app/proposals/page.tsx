@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import Navigation from '@/components/Navigation'
 import { 
@@ -46,14 +46,12 @@ export default function ProposalsPage() {
   const { user, token } = useAuth()
   const [proposals, setProposals] = useState<Proposal[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [activeTab, setActiveTab] = useState<'received' | 'sent'>('received')
 
-  useEffect(() => {
-    fetchProposals()
-  }, [])
-
-  const fetchProposals = async () => {
+  const fetchProposals = useCallback(async () => {
     try {
+      setError('')
       const response = await fetch('/api/proposals', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -62,17 +60,25 @@ export default function ProposalsPage() {
       
       if (response.ok) {
         const data = await response.json()
-        setProposals(data)
+        setProposals(Array.isArray(data) ? data : [])
+      } else {
+        setError('Error loading proposals')
       }
     } catch (error) {
       console.error('Error fetching proposals:', error)
+      setError('Error loading proposals')
     } finally {
       setLoading(false)
     }
-  }
+  }, [token])
+
+  useEffect(() => {
+    fetchProposals()
+  }, [fetchProposals])
 
   const handleProposalAction = async (proposalId: string, status: 'accepted' | 'declined') => {
     try {
+      setError('')
       const response = await fetch('/api/proposals', {
         method: 'PATCH',
         headers: {
@@ -87,9 +93,13 @@ export default function ProposalsPage() {
         setProposals(proposals.map(p => 
           p.id === proposalId ? updatedProposal : p
         ))
+      } else {
+        const errorData = await response.json()
+        setError(errorData.error || 'Failed to update proposal')
       }
     } catch (error) {
       console.error('Error updating proposal:', error)
+      setError('Failed to update proposal')
     }
   }
 
@@ -161,10 +171,17 @@ export default function ProposalsPage() {
             </div>
           </div>
 
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-4">
+              {error}
+            </div>
+          )}
+
           {/* Proposals List */}
           {loading ? (
             <div className="text-center py-8">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600" role="status"></div>
             </div>
           ) : (
             <div className="space-y-4">

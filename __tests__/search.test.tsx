@@ -1,8 +1,8 @@
 import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { AuthProvider } from '@/contexts/AuthContext'
-import SearchPage from '@/app/search/page'
+import { AuthProvider } from '../contexts/AuthContext'
+import SearchPage from '../app/search/page'
 
 // Mock the API calls
 const mockFetch = fetch as jest.MockedFunction<typeof fetch>

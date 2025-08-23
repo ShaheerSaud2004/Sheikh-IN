@@ -65,6 +65,13 @@ export async function GET(request: NextRequest) {
       const profile = await prisma.profile.findUnique({
         where: { userId },
         include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              userType: true
+            }
+          },
           credentials: true,
           experiences: true,
           videos: true,
