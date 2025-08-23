@@ -176,24 +176,34 @@ export default function Home() {
 
             {/* Demo Accounts */}
             <div className="mt-6 pt-6 border-t border-gray-200">
-              <p className="text-sm text-gray-600 mb-3">Demo Accounts:</p>
+              <p className="text-sm text-gray-600 mb-3">Demo Accounts (Password: password123):</p>
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Sheikh:</span>
-                  <span className="font-mono text-gray-700">sheikh.ahmad@example.com / password123</span>
+                  <span className="text-gray-500">Qari:</span>
+                  <span className="font-mono text-gray-700">qari.yusuf@example.com</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Mufti:</span>
+                  <span className="font-mono text-gray-700">sheikh.niaz@example.com</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Imam:</span>
+                  <span className="font-mono text-gray-700">imam.khalid@example.com</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Scholar:</span>
+                  <span className="font-mono text-gray-700">scholar.malik@example.com</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Seeker:</span>
-                  <span className="font-mono text-gray-700">ali.hassan@example.com / password123</span>
+                  <span className="font-mono text-gray-700">user.ahmed@example.com</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Masjid:</span>
-                  <span className="font-mono text-gray-700">masjid.taqwa@example.com / password123</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Nabhan:</span>
-                  <span className="font-mono text-gray-700">nabhanmazid@gmail.com / password123</span>
-                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                All accounts use: <span className="font-mono">password123</span>
+              </p>
+              <div className="mt-3 p-2 bg-emerald-50 rounded text-xs text-emerald-700">
+                <strong>Available Professional Types:</strong> QARI, SHEIKH, IMAM, SCHOLAR, MUFTI, KHATEEB
               </div>
             </div>
           </div>

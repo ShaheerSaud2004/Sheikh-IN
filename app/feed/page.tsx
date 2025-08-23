@@ -44,6 +44,16 @@ interface Post {
   }
 }
 
+interface UserProfile {
+  id: string
+  name: string
+  bio?: string
+  profileImage?: string
+  professionalType?: string
+  location?: string
+  userType: string
+}
+
 export default function Feed() {
   const router = useRouter()
   const { token } = useAuth()
@@ -51,6 +61,7 @@ export default function Feed() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [showCreatePost, setShowCreatePost] = useState(false)
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null)
   const [newPost, setNewPost] = useState({
     content: '',
     postType: 'Reminder',
@@ -63,7 +74,35 @@ export default function Feed() {
 
   useEffect(() => {
     fetchPosts()
+    fetchCurrentUser()
   }, [])
+
+  const fetchCurrentUser = async () => {
+    if (!token) return
+    
+    try {
+      const response = await fetch('/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      if (response.ok) {
+        const userData = await response.json()
+        setCurrentUser({
+          id: userData.user.id,
+          name: userData.user.profile?.name || userData.user.email,
+          bio: userData.user.profile?.bio,
+          profileImage: userData.user.profile?.profileImage,
+          professionalType: userData.user.profile?.professionalType,
+          location: userData.user.profile?.location,
+          userType: userData.user.userType
+        })
+      }
+    } catch (error) {
+      console.error('Error fetching current user:', error)
+    }
+  }
 
   const fetchPosts = async () => {
     try {
@@ -156,7 +195,74 @@ export default function Feed() {
       <Navigation />
       
       <div className="container mx-auto px-4 py-6">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Left Sidebar - Profile Card */}
+            <div className="lg:col-span-3">
+              {currentUser && (
+                <div className="bg-white rounded-lg shadow-sm overflow-hidden sticky top-6">
+                  {/* Profile Banner */}
+                  <div className="h-16 bg-gradient-to-r from-emerald-400 to-emerald-600"></div>
+                  
+                  {/* Profile Content */}
+                  <div className="px-4 pb-4 -mt-8 relative">
+                    <div className="flex flex-col items-center text-center">
+                      {/* Profile Picture */}
+                      <button 
+                        onClick={() => router.push(`/profile/${currentUser.id}`)}
+                        className="h-16 w-16 rounded-full bg-emerald-100 flex items-center justify-center border-4 border-white mb-3 hover:bg-emerald-200 transition-colors"
+                      >
+                        <span className="text-emerald-600 font-semibold text-xl">
+                          {currentUser.name[0].toUpperCase()}
+                        </span>
+                      </button>
+                      
+                      {/* Profile Info */}
+                      <button 
+                        onClick={() => router.push(`/profile/${currentUser.id}`)}
+                        className="hover:text-emerald-600 transition-colors"
+                      >
+                        <h3 className="font-semibold text-gray-900 mb-1">{currentUser.name}</h3>
+                      </button>
+                      
+                      {currentUser.professionalType && (
+                        <p className="text-sm text-emerald-600 font-medium mb-2">
+                          {currentUser.professionalType}
+                        </p>
+                      )}
+                      
+                      {currentUser.bio && (
+                        <p className="text-xs text-gray-600 mb-3 line-clamp-2">
+                          {currentUser.bio}
+                        </p>
+                      )}
+                      
+                      {currentUser.location && (
+                        <div className="flex items-center gap-1 text-xs text-gray-500 mb-3">
+                          <MapPin className="h-3 w-3" />
+                          {currentUser.location}
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Profile Stats */}
+                    <div className="border-t pt-3 mt-3">
+                      <div className="flex justify-between text-xs text-gray-600">
+                        <span>Profile views</span>
+                        <span className="text-emerald-600 font-medium">127</span>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-600 mt-1">
+                        <span>Post impressions</span>
+                        <span className="text-emerald-600 font-medium">1,242</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Main Feed */}
+            <div className="lg:col-span-6">
           {/* Create Post Button */}
           <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
             <button
@@ -441,6 +547,45 @@ export default function Feed() {
               ))}
             </div>
           )}
+            </div>
+
+            {/* Right Sidebar - Quick Links */}
+            <div className="lg:col-span-3">
+              <div className="bg-white rounded-lg shadow-sm p-4 sticky top-6">
+                <h3 className="font-semibold text-gray-900 mb-4">Quick Links</h3>
+                <div className="space-y-3">
+                  <button 
+                    onClick={() => router.push('/search')}
+                    className="w-full text-left text-sm text-gray-600 hover:text-emerald-600 transition-colors"
+                  >
+                    🔍 Find Scholars
+                  </button>
+                  <button 
+                    onClick={() => router.push('/proposals')}
+                    className="w-full text-left text-sm text-gray-600 hover:text-emerald-600 transition-colors"
+                  >
+                    📋 My Proposals
+                  </button>
+                  <button 
+                    onClick={() => router.push('/messages')}
+                    className="w-full text-left text-sm text-gray-600 hover:text-emerald-600 transition-colors"
+                  >
+                    💬 Messages
+                  </button>
+                </div>
+                
+                <div className="border-t pt-4 mt-4">
+                  <h4 className="font-medium text-gray-900 mb-3 text-sm">Popular Services</h4>
+                  <div className="space-y-2">
+                    <div className="text-xs text-gray-600">🕌 Nikah Ceremonies</div>
+                    <div className="text-xs text-gray-600">📖 Tajweed Classes</div>
+                    <div className="text-xs text-gray-600">🎤 Friday Khutbah</div>
+                    <div className="text-xs text-gray-600">💬 Islamic Counseling</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
