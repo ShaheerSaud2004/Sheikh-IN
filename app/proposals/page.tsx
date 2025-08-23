@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import Navigation from '@/components/Navigation'
 import { 
@@ -43,6 +44,7 @@ interface Proposal {
 }
 
 export default function ProposalsPage() {
+  const router = useRouter()
   const { user, token } = useAuth()
   const [proposals, setProposals] = useState<Proposal[]>([])
   const [loading, setLoading] = useState(true)
@@ -195,7 +197,12 @@ export default function ProposalsPage() {
                             {proposal.serviceType.replace(/_/g, ' ')}
                           </h3>
                           <p className="text-sm text-gray-600">
-                            From: {proposal.fromUser.profile.name}
+                            From: <button 
+                              onClick={() => router.push(`/profile/${proposal.fromUser.id}`)}
+                              className="text-emerald-600 hover:text-emerald-700 hover:underline cursor-pointer"
+                            >
+                              {proposal.fromUser.profile.name}
+                            </button>
                           </p>
                         </div>
                         <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(proposal.status)}`}>
@@ -262,7 +269,12 @@ export default function ProposalsPage() {
                             {proposal.serviceType.replace(/_/g, ' ')}
                           </h3>
                           <p className="text-sm text-gray-600">
-                            To: {proposal.toUser.profile.name}
+                            To: <button 
+                              onClick={() => router.push(`/profile/${proposal.toUser.id}`)}
+                              className="text-emerald-600 hover:text-emerald-700 hover:underline cursor-pointer"
+                            >
+                              {proposal.toUser.profile.name}
+                            </button>
                             {proposal.toUser.profile.professionalType && (
                               <span className="text-gray-500"> • {proposal.toUser.profile.professionalType}</span>
                             )}

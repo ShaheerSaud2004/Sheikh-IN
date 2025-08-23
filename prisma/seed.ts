@@ -99,7 +99,7 @@ async function main() {
           website: 'https://muftiniaz.org',
           profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=niaz',
           professionalType: 'MUFTI',
-          madhhab: 'SHAFII',
+          madhhab: 'HANAFI',
           languages: JSON.stringify(['Arabic', 'English', 'Bengali']),
           specialties: JSON.stringify(['FIQH', 'COUNSELING', 'NIKAH']),
           travelRadius: 75,

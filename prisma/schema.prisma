@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,6 +5,163 @@ generator client {
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String     @id @default(cuid())
+  email             String     @unique
+  password          String
+  userType          UserType
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  followers         Follow[]   @relation("Following")
+  following         Follow[]   @relation("Followers")
+  receivedMessages  Message[]  @relation("ReceivedMessages")
+  messages          Message[]  @relation("SentMessages")
+  posts             Post[]
+  profile           Profile?
+  receivedProposals Proposal[] @relation("ReceivedProposals")
+  proposals         Proposal[] @relation("UserProposals")
+}
+
+model Profile {
+  id               String            @id @default(cuid())
+  userId           String            @unique
+  name             String
+  bio              String?
+  profileImage     String?
+  coverImage       String?
+  location         String?
+  phone            String?
+  website          String?
+  professionalType ProfessionalType?
+  madhhab          Madhhab?
+  languages        String?
+  specialties      String?
+  travelRadius     Int?
+  isAvailable      Boolean           @default(true)
+  hourlyRate       Float?
+  isHafiz          Boolean           @default(false)
+  hasIjazah        Boolean           @default(false)
+  ijazahDetails    String?
+  seminary         String?
+  yearsExperience  Int?
+  certifications   String?
+  organizationName String?
+  organizationType String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  credentials      Credential[]
+  endorsements     Endorsement[]
+  experiences      Experience[]
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  videos           Video[]
+}
+
+model Credential {
+  id          String   @id @default(cuid())
+  profileId   String
+  title       String
+  institution String
+  year        String
+  description String?
+  documentUrl String?
+  isVerified  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model Experience {
+  id           String   @id @default(cuid())
+  profileId    String
+  title        String
+  organization String
+  location     String?
+  startDate    String
+  endDate      String?
+  isCurrent    Boolean  @default(false)
+  description  String?
+  createdAt    DateTime @default(now())
+  profile      Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model Video {
+  id          String   @id @default(cuid())
+  profileId   String
+  title       String
+  url         String
+  description String?
+  videoType   String
+  views       Int      @default(0)
+  createdAt   DateTime @default(now())
+  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model Post {
+  id           String       @id @default(cuid())
+  userId       String
+  content      String
+  image        String?
+  postType     String
+  serviceType  ServiceType?
+  location     String?
+  date         DateTime?
+  compensation String?
+  requirements String?
+  likes        Int          @default(0)
+  views        Int          @default(0)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Proposal {
+  id          String      @id @default(cuid())
+  fromUserId  String
+  toUserId    String
+  serviceType ServiceType
+  eventDate   DateTime
+  location    String
+  description String
+  budget      String?
+  status      String      @default("pending")
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  toUser      User        @relation("ReceivedProposals", fields: [toUserId], references: [id], onDelete: Cascade)
+  fromUser    User        @relation("UserProposals", fields: [fromUserId], references: [id], onDelete: Cascade)
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+  following   User     @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+  follower    User     @relation("Followers", fields: [followerId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  fromUserId String
+  toUserId   String
+  content    String
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  toUser     User     @relation("ReceivedMessages", fields: [toUserId], references: [id], onDelete: Cascade)
+  fromUser   User     @relation("SentMessages", fields: [fromUserId], references: [id], onDelete: Cascade)
+}
+
+model Endorsement {
+  id            String   @id @default(cuid())
+  profileId     String
+  endorserName  String
+  endorserTitle String?
+  content       String
+  qualities     String?
+  createdAt     DateTime @default(now())
+  profile       Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
 }
 
 enum UserType {
@@ -51,190 +202,4 @@ enum ServiceType {
   HADITH
   TAFSEER
   OTHER
-}
-
-model User {
-  id             String          @id @default(cuid())
-  email          String          @unique
-  password       String
-  userType       UserType
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  
-  profile        Profile?
-  posts          Post[]
-  proposals      Proposal[]      @relation("UserProposals")
-  receivedProposals Proposal[]   @relation("ReceivedProposals")
-  followers      Follow[]        @relation("Following")
-  following      Follow[]        @relation("Followers")
-  messages       Message[]       @relation("SentMessages")
-  receivedMessages Message[]     @relation("ReceivedMessages")
-}
-
-model Profile {
-  id               String            @id @default(cuid())
-  userId           String            @unique
-  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  // Basic Info
-  name             String
-  bio              String?
-  profileImage     String?
-  coverImage       String?
-  location         String?
-  phone            String?
-  website          String?
-  
-  // Professional Info (for Islamic Professionals)
-  professionalType ProfessionalType?
-  madhhab          Madhhab?
-  languages        String?           // JSON array stored as string
-  specialties      String?           // JSON array stored as string
-  travelRadius     Int?              // in miles/km
-  isAvailable      Boolean           @default(true)
-  hourlyRate       Float?
-  
-  // Qualifications
-  isHafiz          Boolean           @default(false)
-  hasIjazah        Boolean           @default(false)
-  ijazahDetails    String?
-  seminary         String?
-  yearsExperience  Int?
-  certifications   String?           // JSON array stored as string
-  
-  // Organization Info
-  organizationName String?
-  organizationType String?           // Masjid, Islamic Center, School, etc.
-  
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  
-  credentials      Credential[]
-  experiences      Experience[]
-  videos           Video[]
-  endorsements     Endorsement[]
-}
-
-model Credential {
-  id          String   @id @default(cuid())
-  profileId   String
-  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  
-  title       String
-  institution String
-  year        String
-  description String?
-  documentUrl String?
-  isVerified  Boolean  @default(false)
-  
-  createdAt   DateTime @default(now())
-}
-
-model Experience {
-  id          String   @id @default(cuid())
-  profileId   String
-  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  
-  title       String
-  organization String
-  location    String?
-  startDate   String
-  endDate     String?
-  isCurrent   Boolean  @default(false)
-  description String?
-  
-  createdAt   DateTime @default(now())
-}
-
-model Video {
-  id          String   @id @default(cuid())
-  profileId   String
-  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  
-  title       String
-  url         String
-  description String?
-  videoType   String   // Khutbah, Lecture, Recitation, etc.
-  views       Int      @default(0)
-  
-  createdAt   DateTime @default(now())
-}
-
-model Post {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  content     String
-  image       String?
-  postType    String   // Opportunity, Reminder, Event, etc.
-  
-  // For opportunity posts
-  serviceType ServiceType?
-  location    String?
-  date        DateTime?
-  compensation String?
-  requirements String?
-  
-  likes       Int      @default(0)
-  views       Int      @default(0)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model Proposal {
-  id          String   @id @default(cuid())
-  fromUserId  String
-  toUserId    String
-  fromUser    User     @relation("UserProposals", fields: [fromUserId], references: [id], onDelete: Cascade)
-  toUser      User     @relation("ReceivedProposals", fields: [toUserId], references: [id], onDelete: Cascade)
-  
-  serviceType ServiceType
-  eventDate   DateTime
-  location    String
-  description String
-  budget      String?
-  status      String   @default("pending") // pending, accepted, declined
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model Follow {
-  id          String   @id @default(cuid())
-  followerId  String
-  followingId String
-  follower    User     @relation("Followers", fields: [followerId], references: [id], onDelete: Cascade)
-  following   User     @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
-  
-  createdAt   DateTime @default(now())
-  
-  @@unique([followerId, followingId])
-}
-
-model Message {
-  id          String   @id @default(cuid())
-  fromUserId  String
-  toUserId    String
-  fromUser    User     @relation("SentMessages", fields: [fromUserId], references: [id], onDelete: Cascade)
-  toUser      User     @relation("ReceivedMessages", fields: [toUserId], references: [id], onDelete: Cascade)
-  
-  content     String
-  isRead      Boolean  @default(false)
-  
-  createdAt   DateTime @default(now())
-}
-
-model Endorsement {
-  id          String   @id @default(cuid())
-  profileId   String
-  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  
-  endorserName String
-  endorserTitle String?
-  content     String
-  qualities   String?  // JSON array - Hikmah, Clarity, Youth-friendly, etc.
-  
-  createdAt   DateTime @default(now())
 }

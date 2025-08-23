@@ -42,11 +42,20 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
 
+    // Clean up the data before creating the post
+    const cleanData = {
+      userId: user.id,
+      content: body.content,
+      postType: body.postType,
+      serviceType: body.serviceType || null,
+      location: body.location || null,
+      date: body.date ? new Date(body.date) : null,
+      compensation: body.compensation || null,
+      requirements: body.requirements || null
+    }
+
     const post = await prisma.post.create({
-      data: {
-        userId: user.id,
-        ...body
-      },
+      data: cleanData,
       include: {
         user: {
           include: {

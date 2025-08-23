@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import Navigation from '@/components/Navigation'
 import { 
@@ -44,6 +45,7 @@ interface Post {
 }
 
 export default function Feed() {
+  const router = useRouter()
   const { token } = useAuth()
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
@@ -69,6 +71,8 @@ export default function Feed() {
       const response = await fetch('/api/posts')
       if (response.ok) {
         const data = await response.json()
+        console.log('Feed received data:', data)
+        console.log('First post user ID:', data[0]?.user?.id)
         setPosts(data)
       } else {
         setError('Error loading posts')
@@ -329,16 +333,22 @@ export default function Feed() {
                   <div className="p-4 border-b border-gray-100">
                     <div className="flex items-start justify-between">
                       <div className="flex items-start space-x-3">
-                        <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                        <button 
+                          onClick={() => router.push(`/profile/${post.user.id}`)}
+                          className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 hover:bg-emerald-200 transition-colors cursor-pointer"
+                        >
                           <span className="text-emerald-600 font-semibold">
                             {post.user.profile?.name?.[0] || post.user.email[0].toUpperCase()}
                           </span>
-                        </div>
+                        </button>
                         <div>
                           <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-gray-900">
+                            <button 
+                              onClick={() => router.push(`/profile/${post.user.id}`)}
+                              className="font-semibold text-gray-900 hover:text-emerald-600 transition-colors cursor-pointer"
+                            >
                               {post.user.profile?.name || post.user.email}
-                            </h3>
+                            </button>
                             <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${getPostTypeColor(post.postType)}`}>
                               {getPostIcon(post.postType)}
                               {post.postType}

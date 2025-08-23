@@ -214,10 +214,10 @@ export default function ProfilePage() {
 
           {/* Profile Header */}
           <div className="bg-white rounded-lg shadow-sm mb-6">
-            <div className="relative h-32 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-t-lg"></div>
+            <div className="relative h-16 bg-emerald-500 rounded-t-lg"></div>
             
             <div className="px-6 pb-6">
-              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between -mt-12">
+              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between">
                 <div className="flex items-end space-x-4">
                   <div className="h-24 w-24 rounded-full bg-white border-4 border-white shadow-lg flex items-center justify-center">
                     <span className="text-3xl font-bold text-emerald-600">

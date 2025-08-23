@@ -190,6 +190,10 @@ export default function Home() {
                   <span className="text-gray-500">Masjid:</span>
                   <span className="font-mono text-gray-700">masjid.taqwa@example.com / password123</span>
                 </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Nabhan:</span>
+                  <span className="font-mono text-gray-700">nabhanmazid@gmail.com / password123</span>
+                </div>
               </div>
             </div>
           </div>
