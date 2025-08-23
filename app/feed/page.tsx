@@ -31,6 +31,7 @@ interface Post {
   likes: number
   views: number
   createdAt: string
+  isLiked?: boolean
   user: {
     id: string
     email: string
@@ -112,6 +113,26 @@ export default function Feed() {
         const data = await response.json()
         console.log('Feed received data:', data)
         console.log('First post user ID:', data[0]?.user?.id)
+        
+        // Log detailed post information
+        if (data.length > 0) {
+          console.log('=== POST CONTENT DETAILS ===')
+          data.forEach((post: any, index: number) => {
+            console.log(`Post ${index + 1}:`, {
+              id: post.id,
+              title: post.title,
+              content: post.content,
+              serviceType: post.serviceType,
+              location: post.location,
+              date: post.date,
+              compensation: post.compensation,
+              requirements: post.requirements,
+              user: post.user?.name || 'Unknown user'
+            })
+          })
+          console.log('=== END POST DETAILS ===')
+        }
+        
         setPosts(data)
       } else {
         setError('Error loading posts')
@@ -486,6 +507,34 @@ export default function Feed() {
                   <div className="p-4">
                     <p className="text-gray-800 whitespace-pre-wrap">{post.content}</p>
                     
+                    {/* Delete Button */}
+                    <div className="mt-3 flex justify-end">
+                      <button
+                        onClick={async () => {
+                          if (confirm('Are you sure you want to delete this post?')) {
+                            try {
+                              const response = await fetch(`/api/posts/${post.id}`, {
+                                method: 'DELETE',
+                              })
+                              
+                              if (response.ok) {
+                                // Remove from local state
+                                setPosts(posts.filter(p => p.id !== post.id))
+                                console.log('Post deleted successfully!')
+                              } else {
+                                console.error('Failed to delete post')
+                              }
+                            } catch (error) {
+                              console.error('Error deleting post:', error)
+                            }
+                          }
+                        }}
+                        className="px-3 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                    
                     {/* Post Details */}
                     {(post.serviceType || post.location || post.date || post.compensation) && (
                       <div className="mt-4 p-3 bg-gray-50 rounded-lg space-y-2">
@@ -527,9 +576,41 @@ export default function Feed() {
                   <div className="px-4 py-3 border-t border-gray-100">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <button className="flex items-center gap-2 text-gray-600 hover:text-emerald-600 transition">
-                          <Heart className="h-5 w-5" />
-                          <span className="text-sm">{post.likes}</span>
+                        <button 
+                          onClick={async () => {
+                            try {
+                              const response = await fetch(`/api/posts/${post.id}/like`, {
+                                method: 'PATCH',
+                                headers: {
+                                  'Authorization': `Bearer ${token}`,
+                                  'Content-Type': 'application/json'
+                                }
+                              })
+                              
+                              if (response.ok) {
+                                // Update local state to reflect the like
+                                setPosts(posts.map(p => 
+                                  p.id === post.id 
+                                    ? { ...p, likes: (p.likes || 0) + 1, isLiked: true }
+                                    : p
+                                ))
+                              }
+                            } catch (error) {
+                              console.error('Error liking post:', error)
+                            }
+                          }}
+                          className={`flex items-center gap-2 transition-all duration-200 ${
+                            post.isLiked 
+                              ? 'text-red-500 hover:text-red-600' 
+                              : 'text-gray-600 hover:text-red-500'
+                          }`}
+                        >
+                          <Heart 
+                            className={`h-5 w-5 transition-all duration-200 ${
+                              post.isLiked ? 'fill-current' : ''
+                            }`}
+                          />
+                          <span className="text-sm font-medium">{post.likes || 0}</span>
                         </button>
                         <button className="flex items-center gap-2 text-gray-600 hover:text-emerald-600 transition">
                           <MessageCircle className="h-5 w-5" />
