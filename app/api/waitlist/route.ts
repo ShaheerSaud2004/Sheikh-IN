@@ -98,13 +98,13 @@ async function sendWelcomeEmail(email: string, name: string) {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: 'shaheersaud2004s@gmail.com',
+        user: 'shaheersaud2004@gmail.com',
         pass: process.env.app_password || 'jxcb clih jcnq yluw'
       }
     })
 
     const mailOptions = {
-      from: 'Sheikh-Din <shaheersaud2004s@gmail.com>',
+      from: 'Sheikh-Din <shaheersaud2004@gmail.com>',
       to: email,
       subject: 'Welcome to Sheikh-Din Waitlist! 🕌',
       html: getEmailHTML(name),
