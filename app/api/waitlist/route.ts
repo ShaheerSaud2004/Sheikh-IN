@@ -1,6 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
 import { Resend } from 'resend'
+
+// Simple in-memory storage for demo purposes
+// In production, you'd use a proper database
+let waitlistEntries: Array<{
+  id: string
+  name: string
+  email: string
+  phone?: string
+  location?: string
+  interest?: string
+  message?: string
+  createdAt: Date
+}> = []
 
 // POST /api/waitlist - Add user to waitlist
 export async function POST(request: NextRequest) {
@@ -20,25 +32,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if email already exists
-    const existingEntry = await prisma.waitlistEntry.findUnique({
-      where: { email }
-    })
+    const existingEntry = waitlistEntries.find(entry => entry.email === email)
 
     if (existingEntry) {
       return NextResponse.json({ error: 'This email is already on the waitlist' }, { status: 400 })
     }
 
     // Create waitlist entry
-    const waitlistEntry = await prisma.waitlistEntry.create({
-      data: {
-        name,
-        email,
-        phone,
-        location,
-        interest,
-        message
-      }
-    })
+    const waitlistEntry = {
+      id: Math.random().toString(36).substring(2, 15),
+      name,
+      email,
+      phone,
+      location,
+      interest,
+      message,
+      createdAt: new Date()
+    }
+    
+    waitlistEntries.push(waitlistEntry)
 
     // Send confirmation email using Resend
     try {
@@ -64,11 +76,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     // In a real app, you'd check for admin authentication here
-    const entries = await prisma.waitlistEntry.findMany({
-      orderBy: {
-        createdAt: 'desc'
-      }
-    })
+    const entries = waitlistEntries.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
 
     return NextResponse.json({ entries })
   } catch (error) {
@@ -86,7 +94,7 @@ async function sendWelcomeEmail(email: string, name: string) {
   
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Sheikh-Din <onboarding@sheikh-din.com>',
+      from: 'Sheikh-Din <onboarding@resend.dev>',
       to: [email],
       subject: 'Welcome to Sheikh-Din Waitlist! 🕌',
       html: `
