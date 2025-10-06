@@ -91,20 +91,15 @@ export async function GET(request: NextRequest) {
 async function sendWelcomeEmail(email: string, name: string) {
   console.log(`📧 Sending welcome email to ${email} for ${name}`)
   
-  // Try Gmail SMTP first (free and works with any email)
+  // Try Gmail SMTP first with new app password
   try {
-    // Debug environment variables
-    console.log('Environment variables:', {
-      app_password: process.env.app_password ? 'SET' : 'NOT SET',
-      GMAIL_USER: process.env.GMAIL_USER ? 'SET' : 'NOT SET',
-      user: process.env.GMAIL_USER || 'shaheersaud2004s@gmail.com'
-    })
+    console.log('Trying Gmail SMTP with new app password...')
     
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: 'shaheersaud2004s@gmail.com',
-        pass: process.env.app_password || 'ilcw wblp qvpu kxqx'
+        pass: process.env.app_password || 'jxcb clih jcnq yluw'
       }
     })
 
