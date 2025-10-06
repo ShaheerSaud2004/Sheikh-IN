@@ -304,12 +304,12 @@ export default function WaitlistPage() {
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-900">Ashiyam A.</h4>
-                    <p className="text-sm text-gray-500">Masjid Board Member</p>
+                    <p className="text-sm text-gray-500">Board Member, Darul Islah</p>
                   </div>
                 </div>
                 <p className="text-gray-600 italic">
-                  &quot;This is exactly what our community needs. Having verified credentials and 
-                  reviews will help us make better decisions for our masjid programs.&quot;
+                  &quot;Sheikh-Din is exactly what our community needs. Having verified credentials and 
+                  reviews will help us make better decisions for our Islamic programs at Darul Islah.&quot;
                 </p>
               </div>
 

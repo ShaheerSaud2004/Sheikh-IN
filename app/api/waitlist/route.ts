@@ -1,43 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import nodemailer from 'nodemailer'
-import fs from 'fs'
-import path from 'path'
 
-// File-based storage for persistence
-const DATA_FILE = path.join(process.cwd(), 'data', 'waitlist.json')
-
-// Ensure data directory exists
-if (!fs.existsSync(path.dirname(DATA_FILE))) {
-  fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true })
-}
-
-// Load waitlist entries from file
-function loadWaitlistEntries() {
-  try {
-    if (fs.existsSync(DATA_FILE)) {
-      const data = fs.readFileSync(DATA_FILE, 'utf8')
-      return JSON.parse(data).map((entry: any) => ({
-        ...entry,
-        createdAt: new Date(entry.createdAt)
-      }))
-    }
-  } catch (error) {
-    console.error('Error loading waitlist entries:', error)
-  }
-  return []
-}
-
-// Save waitlist entries to file
-function saveWaitlistEntries(entries: any[]) {
-  try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(entries, null, 2))
-  } catch (error) {
-    console.error('Error saving waitlist entries:', error)
-  }
-}
-
-let waitlistEntries = loadWaitlistEntries()
+// In-memory storage for serverless environment
+// Note: In production, you'd want to use a database like PostgreSQL or MongoDB
+let waitlistEntries: Array<{
+  id: string
+  name: string
+  email: string
+  phone?: string
+  location?: string
+  interest?: string
+  message?: string
+  createdAt: Date
+}> = []
 
 // POST /api/waitlist - Add user to waitlist
 export async function POST(request: NextRequest) {
@@ -76,7 +52,6 @@ export async function POST(request: NextRequest) {
     }
     
     waitlistEntries.push(waitlistEntry)
-    saveWaitlistEntries(waitlistEntries)
 
     // Send confirmation email
     try {
@@ -118,7 +93,7 @@ async function sendWelcomeEmail(email: string, name: string) {
   
   // Try Gmail SMTP first (free and works with any email)
   try {
-    const transporter = nodemailer.createTransporter({
+    const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: process.env.GMAIL_USER || 'shaheersaud2004s@gmail.com',
