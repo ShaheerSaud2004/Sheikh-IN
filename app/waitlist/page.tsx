@@ -320,11 +320,11 @@ export default function WaitlistPage() {
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-900">Saud Asif</h4>
-                    <p className="text-sm text-gray-500">ICEB Shura Member</p>
+                    <p className="text-sm text-gray-500">Community Member</p>
                   </div>
                 </div>
                 <p className="text-gray-600 italic">
-                  &quot;As a member of the Islamic Center of East Bay Shura, I believe this platform 
+                  &quot;As a community member of the Islamic Center of East Brunswick, I believe this platform 
                   will greatly benefit our community by connecting qualified scholars with those in need of guidance.&quot;
                 </p>
               </div>
