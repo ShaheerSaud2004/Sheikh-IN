@@ -93,10 +93,17 @@ async function sendWelcomeEmail(email: string, name: string) {
   
   // Try Gmail SMTP first (free and works with any email)
   try {
+    // Debug environment variables
+    console.log('Environment variables:', {
+      app_password: process.env.app_password ? 'SET' : 'NOT SET',
+      GMAIL_USER: process.env.GMAIL_USER ? 'SET' : 'NOT SET',
+      user: process.env.GMAIL_USER || 'shaheersaud2004s@gmail.com'
+    })
+    
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: process.env.GMAIL_USER || 'shaheersaud2004s@gmail.com',
+        user: 'shaheersaud2004s@gmail.com',
         pass: process.env.app_password || 'ilcw wblp qvpu kxqx'
       }
     })
