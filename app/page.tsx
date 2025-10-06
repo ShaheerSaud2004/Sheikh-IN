@@ -1,36 +1,108 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
-import { Building2, Users, Calendar, BookOpen, Star } from 'lucide-react'
+import { 
+  Building2, 
+  Users, 
+  Calendar, 
+  BookOpen, 
+  Star,
+  ArrowRight,
+  CheckCircle
+} from 'lucide-react'
 
 export default function Home() {
   const [isSignUp, setIsSignUp] = useState(false)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [userType, setUserType] = useState('SEEKER')
-  const [error, setError] = useState('')
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    userType: 'SEEKER' as 'PROFESSIONAL' | 'SEEKER' | 'ORGANIZATION'
+  })
   const [loading, setLoading] = useState(false)
-  
-  const { signIn, signUp } = useAuth()
+  const [error, setError] = useState('')
+  const [hasAccess, setHasAccess] = useState(false)
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const { signIn } = useAuth()
+
+  useEffect(() => {
+    // Check if user has access via special URL parameter
+    const accessKey = searchParams.get('access')
+    if (accessKey === 'websitenowhaha') {
+      setHasAccess(true)
+    } else {
+      // Redirect to waitlist if no access
+      router.push('/waitlist')
+    }
+  }, [searchParams, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
     setLoading(true)
+    setError('')
 
     try {
       if (isSignUp) {
-        await signUp(email, password, userType)
+        // Handle sign up
+        const response = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          localStorage.setItem('token', data.token)
+          router.push('/onboarding')
+        } else {
+          const errorData = await response.json()
+          setError(errorData.error || 'Sign up failed')
+        }
       } else {
-        await signIn(email, password)
+        // Handle sign in
+        const response = await fetch('/api/auth/signin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password,
+          }),
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          localStorage.setItem('token', data.token)
+          await signIn(data.token)
+          router.push('/feed')
+        } else {
+          const errorData = await response.json()
+          setError(errorData.error || 'Sign in failed')
+        }
       }
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'An error occurred'
-      setError(errorMessage)
+    } catch (error) {
+      setError('An error occurred. Please try again.')
     } finally {
       setLoading(false)
     }
+  }
+
+  // Don't render the page if user doesn't have access
+  if (!hasAccess) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Redirecting...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -76,47 +148,99 @@ export default function Home() {
 
             {/* Features */}
             <div className="bg-white/50 backdrop-blur rounded-lg p-6">
-              <h3 className="font-semibold text-gray-800 mb-3">For Islamic Professionals:</h3>
-              <ul className="space-y-2 text-gray-600">
-                <li>✓ Create professional profiles with credentials</li>
-                <li>✓ Showcase khutbahs, lectures, and expertise</li>
-                <li>✓ Connect with organizations and individuals</li>
-              </ul>
-              
-              <h3 className="font-semibold text-gray-800 mt-4 mb-3">For Communities:</h3>
-              <ul className="space-y-2 text-gray-600">
-                <li>✓ Find sheikhs for events and programs</li>
-                <li>✓ Post opportunities and requests</li>
-                <li>✓ Build trusted connections</li>
+              <h3 className="font-semibold text-gray-900 mb-4">What you can do:</h3>
+              <ul className="space-y-2 text-gray-700">
+                <li className="flex items-center space-x-2">
+                  <CheckCircle className="h-4 w-4 text-emerald-600" />
+                  <span>Find scholars for nikah ceremonies</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <CheckCircle className="h-4 w-4 text-emerald-600" />
+                  <span>Book Friday khutbah speakers</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <CheckCircle className="h-4 w-4 text-emerald-600" />
+                  <span>Get Islamic counseling</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <CheckCircle className="h-4 w-4 text-emerald-600" />
+                  <span>Learn Quran and Islamic studies</span>
+                </li>
               </ul>
             </div>
           </div>
 
           {/* Right Side - Auth Form */}
           <div className="bg-white rounded-2xl shadow-xl p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              {isSignUp ? 'Create Account' : 'Welcome Back'}
-            </h2>
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                {isSignUp ? 'Join Sheikh-Din' : 'Welcome Back'}
+              </h2>
+              <p className="text-gray-600">
+                {isSignUp ? 'Create your account to get started' : 'Sign in to continue'}
+              </p>
+            </div>
+
+            {/* Toggle Buttons */}
+            <div className="flex bg-gray-100 rounded-lg p-1 mb-6">
+              <button
+                onClick={() => setIsSignUp(false)}
+                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                  !isSignUp 
+                    ? 'bg-white text-emerald-600 shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => setIsSignUp(true)}
+                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                  isSignUp 
+                    ? 'bg-white text-emerald-600 shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Sign Up
+              </button>
+            </div>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-4">
+              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6">
                 {error}
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
+              {isSignUp && (
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    placeholder="Enter your full name"
+                  />
+                </div>
+              )}
+
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email
+                  Email Address
                 </label>
                 <input
-                  id="email"
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900"
-                  placeholder="your@email.com"
+                  id="email"
                   required
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  placeholder="Enter your email"
                 />
               </div>
 
@@ -125,85 +249,66 @@ export default function Home() {
                   Password
                 </label>
                 <input
-                  id="password"
                   type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900"
-                  placeholder="••••••••"
+                  id="password"
                   required
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  placeholder="Enter your password"
                 />
               </div>
 
               {isSignUp && (
                 <div>
                   <label htmlFor="userType" className="block text-sm font-medium text-gray-700 mb-2">
-                    I am a...
+                    I am a:
                   </label>
                   <select
                     id="userType"
-                    value={userType}
-                    onChange={(e) => setUserType(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900"
+                    value={formData.userType}
+                    onChange={(e) => setFormData({ ...formData, userType: e.target.value as any })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   >
-                    <option value="PROFESSIONAL">Islamic Professional (Sheikh/Imam/Scholar)</option>
-                    <option value="SEEKER">Individual Seeking Services</option>
-                    <option value="ORGANIZATION">Organization/Masjid</option>
+                    <option value="SEEKER">Community Member</option>
+                    <option value="PROFESSIONAL">Islamic Professional (Sheikh, Imam, Qari)</option>
+                    <option value="ORGANIZATION">Organization (Masjid, School, Center)</option>
                   </select>
                 </div>
               )}
 
               <button
                 type="submit"
-                disabled={loading}
-                className="w-full bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={loading || !formData.email || !formData.password || (isSignUp && !formData.name)}
+                className="w-full bg-emerald-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 transition-colors"
               >
-                {loading ? 'Loading...' : (isSignUp ? 'Create Account' : 'Sign In')}
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    <span>{isSignUp ? 'Creating Account...' : 'Signing In...'}</span>
+                  </>
+                ) : (
+                  <>
+                    <span>{isSignUp ? 'Create Account' : 'Sign In'}</span>
+                    <ArrowRight className="h-5 w-5" />
+                  </>
+                )}
               </button>
             </form>
 
-            <div className="mt-6 text-center">
-              <button
-                onClick={() => {
-                  setIsSignUp(!isSignUp)
-                  setError('')
-                }}
-                className="text-emerald-600 hover:text-emerald-700 font-medium"
-              >
-                {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
-              </button>
-            </div>
-
             {/* Demo Accounts */}
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <p className="text-sm text-gray-600 mb-3">Demo Accounts (Password: password123):</p>
-              <div className="space-y-2 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Qari:</span>
-                  <span className="font-mono text-gray-700">qari.yusuf@example.com</span>
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <p className="text-sm text-gray-600 text-center mb-4">Try demo accounts:</p>
+              <div className="grid grid-cols-1 gap-2 text-xs">
+                <div className="bg-gray-50 p-2 rounded">
+                  <strong>Sheikh:</strong> sheikh.ahmad@example.com / password123
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Mufti:</span>
-                  <span className="font-mono text-gray-700">sheikh.niaz@example.com</span>
+                <div className="bg-gray-50 p-2 rounded">
+                  <strong>Individual:</strong> ali.hassan@example.com / password123
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Imam:</span>
-                  <span className="font-mono text-gray-700">imam.khalid@example.com</span>
+                <div className="bg-gray-50 p-2 rounded">
+                  <strong>Masjid:</strong> masjid.taqwa@example.com / password123
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Scholar:</span>
-                  <span className="font-mono text-gray-700">scholar.malik@example.com</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Seeker:</span>
-                  <span className="font-mono text-gray-700">user.ahmed@example.com</span>
-                </div>
-              </div>
-              <p className="text-xs text-gray-500 mt-2 text-center">
-                All accounts use: <span className="font-mono">password123</span>
-              </p>
-              <div className="mt-3 p-2 bg-emerald-50 rounded text-xs text-emerald-700">
-                <strong>Available Professional Types:</strong> QARI, SHEIKH, IMAM, SCHOLAR, MUFTI, KHATEEB
               </div>
             </div>
           </div>

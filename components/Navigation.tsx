@@ -12,20 +12,58 @@ import {
   LogOut,
   Building2,
   Menu,
-  X
+  X,
+  Calendar,
+  BookOpen,
+  BarChart3
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function Navigation() {
   const pathname = usePathname()
-  const { user, signOut } = useAuth()
+  const { user, signOut, token } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  // Fetch unread message count
+  useEffect(() => {
+    if (token) {
+      fetchUnreadCount()
+      
+      // Poll for updates every 30 seconds
+      const interval = setInterval(fetchUnreadCount, 30000)
+      return () => clearInterval(interval)
+    }
+  }, [token])
+
+  const fetchUnreadCount = async () => {
+    if (!token) return
+
+    try {
+      const response = await fetch('/api/messages', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        const totalUnread = data.conversations?.reduce((sum: number, conv: any) => sum + (conv.unreadCount || 0), 0) || 0
+        setUnreadCount(totalUnread)
+      }
+    } catch (error) {
+      console.error('Error fetching unread count:', error)
+    }
+  }
 
   const navItems = [
     { href: '/feed', label: 'Feed', icon: Home },
     { href: '/search', label: 'Search', icon: Search },
+    { href: '/content', label: 'Content', icon: BookOpen },
+    { href: '/calendar', label: 'Calendar', icon: Calendar },
     { href: '/proposals', label: 'Proposals', icon: Briefcase },
     { href: '/messages', label: 'Messages', icon: MessageSquare },
+    { href: '/analytics', label: 'Analytics', icon: BarChart3 },
     { href: '/profile', label: 'Profile', icon: User },
   ]
 
@@ -44,12 +82,13 @@ export default function Navigation() {
             {navItems.map((item) => {
               const Icon = item.icon
               const isActive = pathname === item.href
+              const showBadge = item.href === '/messages' && unreadCount > 0
               
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex flex-col items-center px-4 py-2 rounded-lg transition-colors ${
+                  className={`flex flex-col items-center px-4 py-2 rounded-lg transition-colors relative ${
                     isActive 
                       ? 'text-emerald-600 bg-emerald-50' 
                       : 'text-gray-600 hover:text-emerald-600 hover:bg-gray-50'
@@ -57,6 +96,11 @@ export default function Navigation() {
                 >
                   <Icon className="h-5 w-5" />
                   <span className="text-xs mt-1">{item.label}</span>
+                  {showBadge && (
+                    <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </div>
+                  )}
                 </Link>
               )
             })}
@@ -113,13 +157,14 @@ export default function Navigation() {
             {navItems.map((item) => {
               const Icon = item.icon
               const isActive = pathname === item.href
+              const showBadge = item.href === '/messages' && unreadCount > 0
               
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
+                  className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors relative ${
                     isActive 
                       ? 'text-emerald-600 bg-emerald-50' 
                       : 'text-gray-600 hover:text-emerald-600 hover:bg-gray-50'
@@ -127,6 +172,11 @@ export default function Navigation() {
                 >
                   <Icon className="h-5 w-5" />
                   <span>{item.label}</span>
+                  {showBadge && (
+                    <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </div>
+                  )}
                 </Link>
               )
             })}

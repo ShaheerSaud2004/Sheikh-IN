@@ -3,9 +3,9 @@ import { prisma } from '@/lib/prisma'
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const postId = params.id
+  const { id: postId } = await params
 
   try {
     const post = await prisma.post.update({

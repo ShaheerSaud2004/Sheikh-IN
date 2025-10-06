@@ -366,7 +366,7 @@ export default function SearchPage() {
                         </div>
                       </div>
                       {profile.credentials.some(c => c.isVerified) && (
-                        <CheckCircle className="h-5 w-5 text-blue-500" title="Verified Credentials" />
+                        <CheckCircle className="h-5 w-5 text-blue-500" />
                       )}
                     </div>
 

@@ -4,24 +4,31 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  url      = "file:./dev.db"
 }
 
 model User {
-  id                String     @id @default(cuid())
-  email             String     @unique
+  id                String           @id @default(cuid())
+  email             String           @unique
   password          String
   userType          UserType
-  createdAt         DateTime   @default(now())
-  updatedAt         DateTime   @updatedAt
-  followers         Follow[]   @relation("Following")
-  following         Follow[]   @relation("Followers")
-  receivedMessages  Message[]  @relation("ReceivedMessages")
-  messages          Message[]  @relation("SentMessages")
+  timezone          String?          @default("UTC")
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  followers         Follow[]         @relation("Following")
+  following         Follow[]         @relation("Followers")
+  receivedMessages  Message[]        @relation("ReceivedMessages")
+  messages          Message[]        @relation("SentMessages")
   posts             Post[]
   profile           Profile?
-  receivedProposals Proposal[] @relation("ReceivedProposals")
-  proposals         Proposal[] @relation("UserProposals")
+  receivedProposals Proposal[]       @relation("ReceivedProposals")
+  proposals         Proposal[]       @relation("UserProposals")
+  calendarEvents    CalendarEvent[]
+  sheikhBookings    Booking[]        @relation("SheikhBookings")
+  clientBookings    Booking[]        @relation("ClientBookings")
+  content           Content[]
+  notifications     Notification[]
+  analytics         Analytics[]
 }
 
 model Profile {
@@ -202,4 +209,160 @@ enum ServiceType {
   HADITH
   TAFSEER
   OTHER
+}
+
+model CalendarEvent {
+  id          String      @id @default(cuid())
+  userId      String
+  title       String
+  description String?
+  startTime   DateTime
+  endTime     DateTime
+  eventType   EventType
+  serviceType ServiceType?
+  location    String?
+  isRecurring Boolean     @default(false)
+  recurrence  String?     // JSON string for recurrence rules
+  isBooked    Boolean     @default(false)
+  bookedBy    String?     // User ID who booked this slot
+  meetingUrl  String?     // For video calls
+  status      EventStatus @default(AVAILABLE)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookings    Booking[]
+}
+
+model Booking {
+  id          String        @id @default(cuid())
+  sheikhId    String
+  clientId    String
+  eventId     String
+  serviceType ServiceType
+  startTime   DateTime
+  endTime     DateTime
+  location    String?
+  description String?
+  status      BookingStatus @default(PENDING)
+  meetingUrl  String?
+  notes       String?
+  price       Float?
+  paymentStatus PaymentStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  sheikh      User          @relation("SheikhBookings", fields: [sheikhId], references: [id], onDelete: Cascade)
+  client      User          @relation("ClientBookings", fields: [clientId], references: [id], onDelete: Cascade)
+  event       CalendarEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+model Content {
+  id          String      @id @default(cuid())
+  authorId    String
+  title       String
+  description String
+  content     String      // For articles
+  videoUrl    String?     // For videos
+  audioUrl    String?     // For podcasts
+  thumbnail   String?
+  category    ContentCategory
+  tags        String?     // JSON array of tags
+  isPublic    Boolean     @default(true)
+  isLive      Boolean     @default(false) // For live streaming
+  liveUrl     String?     // Stream URL
+  views       Int         @default(0)
+  likes       Int         @default(0)
+  duration    Int?        // Duration in seconds for videos/audio
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  author      User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      NotificationType
+  data      String?          // JSON data for additional info
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Analytics {
+  id              String   @id @default(cuid())
+  userId          String
+  date            DateTime
+  bookings        Int      @default(0)
+  revenue         Float    @default(0)
+  profileViews    Int      @default(0)
+  messagesSent    Int      @default(0)
+  proposalsSent   Int      @default(0)
+  proposalsReceived Int    @default(0)
+  contentViews    Int      @default(0)
+  createdAt       DateTime @default(now())
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum EventType {
+  AVAILABILITY
+  BOOKING
+  BREAK
+  PERSONAL
+}
+
+enum EventStatus {
+  AVAILABLE
+  BOOKED
+  CANCELLED
+  COMPLETED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum ContentCategory {
+  ARTICLE
+  VIDEO
+  PODCAST
+  LIVESTREAM
+  KHUTBAH
+  LESSON
+  REMINDER
+}
+
+enum NotificationType {
+  BOOKING_REQUEST
+  BOOKING_CONFIRMED
+  BOOKING_CANCELLED
+  MESSAGE
+  PROPOSAL
+  CONTENT_LIKE
+  FOLLOW
+  SYSTEM
+}
+
+model WaitlistEntry {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  phone     String?
+  location  String?
+  interest  String?  // What they're interested in (nikah, teaching, etc.)
+  message   String?  // Additional message
+  status    String   @default("pending") // pending, approved, rejected
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

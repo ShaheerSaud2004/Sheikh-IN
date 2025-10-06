@@ -246,8 +246,12 @@ export default function ProfilePage() {
                     <button className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
                       <UserPlus className="h-5 w-5" />
                     </button>
-                    <button className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                    <button 
+                      onClick={() => router.push(`/messages?user=${profile.user.id}`)}
+                      className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                    >
                       <MessageSquare className="h-5 w-5" />
+                      Message
                     </button>
                     {profile.user.userType === 'PROFESSIONAL' && (
                       <button

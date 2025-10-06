@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import Navigation from '@/components/Navigation'
+import PrayerTimes from '@/components/PrayerTimes'
 import { 
   Heart, 
   MessageCircle, 
@@ -73,12 +74,7 @@ export default function Feed() {
     requirements: ''
   })
 
-  useEffect(() => {
-    fetchPosts()
-    fetchCurrentUser()
-  }, [])
-
-  const fetchCurrentUser = async () => {
+  const fetchCurrentUser = useCallback(async () => {
     if (!token) return
     
     try {
@@ -103,7 +99,12 @@ export default function Feed() {
     } catch (error) {
       console.error('Error fetching current user:', error)
     }
-  }
+  }, [token])
+
+  useEffect(() => {
+    fetchPosts()
+    fetchCurrentUser()
+  }, [fetchCurrentUser])
 
   const fetchPosts = async () => {
     try {
@@ -117,17 +118,17 @@ export default function Feed() {
         // Log detailed post information
         if (data.length > 0) {
           console.log('=== POST CONTENT DETAILS ===')
-          data.forEach((post: any, index: number) => {
+          data.forEach((post: Post, index: number) => {
             console.log(`Post ${index + 1}:`, {
               id: post.id,
-              title: post.title,
               content: post.content,
+              postType: post.postType,
               serviceType: post.serviceType,
               location: post.location,
               date: post.date,
               compensation: post.compensation,
               requirements: post.requirements,
-              user: post.user?.name || 'Unknown user'
+              user: post.user?.profile?.name || 'Unknown user'
             })
           })
           console.log('=== END POST DETAILS ===')
@@ -219,7 +220,10 @@ export default function Feed() {
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Left Sidebar - Profile Card */}
-            <div className="lg:col-span-3">
+            <div className="lg:col-span-3 space-y-6">
+              {/* Prayer Times */}
+              <PrayerTimes />
+              
               {currentUser && (
                 <div className="bg-white rounded-lg shadow-sm overflow-hidden sticky top-6">
                   {/* Profile Banner */}

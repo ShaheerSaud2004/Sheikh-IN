@@ -15,7 +15,7 @@ async function main() {
       console.log('Found post to delete:', {
         id: post.id,
         content: post.content,
-        user: post.user?.name || 'Unknown'
+        user: post.user?.email || 'Unknown'
       })
 
       await prisma.post.delete({
