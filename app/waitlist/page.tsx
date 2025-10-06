@@ -292,8 +292,8 @@ export default function WaitlistPage() {
                   </div>
                 </div>
                 <p className="text-gray-600 italic">
-                  "Finally! A platform where I can find qualified sheikhs for our community events. 
-                  No more asking around or settling for less qualified individuals."
+                &quot;Finally! A platform where I can find qualified sheikhs for our community events. 
+                No more asking around or settling for less qualified individuals.&quot;
                 </p>
               </div>
 
@@ -308,8 +308,8 @@ export default function WaitlistPage() {
                   </div>
                 </div>
                 <p className="text-gray-600 italic">
-                  "This is exactly what our community needs. Having verified credentials and 
-                  reviews will help us make better decisions for our masjid programs."
+                  &quot;This is exactly what our community needs. Having verified credentials and 
+                  reviews will help us make better decisions for our masjid programs.&quot;
                 </p>
               </div>
 
@@ -324,8 +324,8 @@ export default function WaitlistPage() {
                   </div>
                 </div>
                 <p className="text-gray-600 italic">
-                  "As a female Islamic educator, I'm excited to have a professional platform 
-                  to connect with the community and showcase my qualifications."
+                  &quot;As a female Islamic educator, I&apos;m excited to have a professional platform 
+                  to connect with the community and showcase my qualifications.&quot;
                 </p>
               </div>
             </div>
