@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
 
     // Demo accounts for production (when database isn't available)
     const demoAccounts = {
+      'shaheersaud2004@gmail.com': { password: 'Capricorn@72', userType: 'PROFESSIONAL', name: 'Shaheer Saud' },
       'sheikh.ahmad@example.com': { password: 'password123', userType: 'PROFESSIONAL', name: 'Sheikh Ahmad' },
       'ali.hassan@example.com': { password: 'password123', userType: 'SEEKER', name: 'Ali Hassan' },
       'masjid.taqwa@example.com': { password: 'password123', userType: 'ORGANIZATION', name: 'Masjid Taqwa' }
