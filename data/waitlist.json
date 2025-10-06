@@ -1,0 +1,12 @@
+[
+  {
+    "id": "pjjbgc2laro",
+    "name": "Test User",
+    "email": "ss4108@scarletmail.rutgers.edu",
+    "phone": "123-456-7890",
+    "location": "Test City",
+    "interest": "General",
+    "message": "Testing fixed email and storage",
+    "createdAt": "2025-10-06T20:10:47.358Z"
+  }
+]

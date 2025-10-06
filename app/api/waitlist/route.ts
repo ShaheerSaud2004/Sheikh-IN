@@ -1,18 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import fs from 'fs'
+import path from 'path'
 
-// Simple in-memory storage for demo purposes
-// In production, you'd use a proper database
-let waitlistEntries: Array<{
-  id: string
-  name: string
-  email: string
-  phone?: string
-  location?: string
-  interest?: string
-  message?: string
-  createdAt: Date
-}> = []
+// File-based storage for persistence
+const DATA_FILE = path.join(process.cwd(), 'data', 'waitlist.json')
+
+// Ensure data directory exists
+if (!fs.existsSync(path.dirname(DATA_FILE))) {
+  fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true })
+}
+
+// Load waitlist entries from file
+function loadWaitlistEntries() {
+  try {
+    if (fs.existsSync(DATA_FILE)) {
+      const data = fs.readFileSync(DATA_FILE, 'utf8')
+      return JSON.parse(data).map((entry: any) => ({
+        ...entry,
+        createdAt: new Date(entry.createdAt)
+      }))
+    }
+  } catch (error) {
+    console.error('Error loading waitlist entries:', error)
+  }
+  return []
+}
+
+// Save waitlist entries to file
+function saveWaitlistEntries(entries: any[]) {
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(entries, null, 2))
+  } catch (error) {
+    console.error('Error saving waitlist entries:', error)
+  }
+}
+
+let waitlistEntries = loadWaitlistEntries()
 
 // POST /api/waitlist - Add user to waitlist
 export async function POST(request: NextRequest) {
@@ -51,9 +75,12 @@ export async function POST(request: NextRequest) {
     }
     
     waitlistEntries.push(waitlistEntry)
+    saveWaitlistEntries(waitlistEntries)
 
     // Send confirmation email using Resend
     try {
+      // For testing: send to verified email address, but log the intended recipient
+      console.log(`📧 Intended recipient: ${email} for ${name}`)
       await sendWelcomeEmail(email, name)
     } catch (emailError) {
       console.error('Error sending email:', emailError)
@@ -95,8 +122,8 @@ async function sendWelcomeEmail(email: string, name: string) {
   try {
     const { data, error } = await resend.emails.send({
       from: 'Sheikh-Din <onboarding@resend.dev>',
-      to: [email],
-      subject: 'Welcome to Sheikh-Din Waitlist! 🕌',
+      to: ['shaheersaud2004s@gmail.com'], // Use verified email for testing
+      subject: `Welcome to Sheikh-Din Waitlist! 🕌 (Requested by: ${name} - ${email})`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 40px; text-align: center;">
@@ -105,6 +132,12 @@ async function sendWelcomeEmail(email: string, name: string) {
           </div>
           
           <div style="padding: 40px; background: white;">
+            <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+              <p style="color: #92400e; margin: 0; font-size: 14px;">
+                <strong>📧 Test Email:</strong> This email was requested by <strong>${name}</strong> (${email}) 
+                but sent to you because the Resend account is in testing mode.
+              </p>
+            </div>
             <h2 style="color: #374151; margin-bottom: 20px;">Assalamu alaikum ${name}!</h2>
             
             <p style="color: #6b7280; line-height: 1.6; margin-bottom: 20px;">
