@@ -316,16 +316,16 @@ export default function WaitlistPage() {
               <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
                 <div className="flex items-center mb-4">
                   <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mr-4">
-                    <span className="text-purple-600 font-bold">F</span>
+                    <span className="text-purple-600 font-bold">S</span>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900">Fatima K.</h4>
-                    <p className="text-sm text-gray-500">Islamic Scholar</p>
+                    <h4 className="font-semibold text-gray-900">Saud Asif</h4>
+                    <p className="text-sm text-gray-500">ICEB Shura Member</p>
                   </div>
                 </div>
                 <p className="text-gray-600 italic">
-                  &quot;As a female Islamic educator, I&apos;m excited to have a professional platform 
-                  to connect with the community and showcase my qualifications.&quot;
+                  &quot;As a member of the Islamic Center of East Bay Shura, I believe this platform 
+                  will greatly benefit our community by connecting qualified scholars with those in need of guidance.&quot;
                 </p>
               </div>
             </div>

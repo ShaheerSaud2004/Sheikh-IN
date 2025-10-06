@@ -26,7 +26,7 @@ function HomeContent() {
   const [hasAccess, setHasAccess] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { signIn } = useAuth()
+  const { fetchUser } = useAuth()
 
   useEffect(() => {
     // Check if user has access via special URL parameter
@@ -79,7 +79,8 @@ function HomeContent() {
         if (response.ok) {
           const data = await response.json()
           localStorage.setItem('token', data.token)
-          await signIn(data.token)
+          // Update auth context with the user data
+          await fetchUser(data.token)
           router.push('/feed')
         } else {
           const errorData = await response.json()

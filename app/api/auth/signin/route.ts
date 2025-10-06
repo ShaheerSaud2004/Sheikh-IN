@@ -7,8 +7,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { email, password } = body
 
+    console.log('Signin attempt:', { email, hasPassword: !!password })
+
     // Validate input
     if (!email || !password) {
+      console.log('Validation failed:', { email: !!email, password: !!password })
       return NextResponse.json(
         { error: 'Missing email or password' },
         { status: 400 }
@@ -24,18 +27,24 @@ export async function POST(request: NextRequest) {
     }
 
     // Check demo accounts first
-    if (demoAccounts[email as keyof typeof demoAccounts] && 
-        demoAccounts[email as keyof typeof demoAccounts].password === password) {
-      const account = demoAccounts[email as keyof typeof demoAccounts]
+    const demoAccount = demoAccounts[email as keyof typeof demoAccounts]
+    console.log('Demo account check:', { 
+      email, 
+      found: !!demoAccount, 
+      passwordMatch: demoAccount?.password === password 
+    })
+    
+    if (demoAccount && demoAccount.password === password) {
+      console.log('Demo account login successful:', email)
       const token = generateToken(email) // Use email as ID for demo
       
       return NextResponse.json({
         user: {
           id: email,
           email: email,
-          userType: account.userType,
-          name: account.name,
-          profile: { name: account.name, bio: 'Demo account' }
+          userType: demoAccount.userType,
+          name: demoAccount.name,
+          profile: { name: demoAccount.name, bio: 'Demo account' }
         },
         token
       })
