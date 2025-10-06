@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { 
@@ -13,7 +13,7 @@ import {
   CheckCircle
 } from 'lucide-react'
 
-export default function Home() {
+function HomeContent() {
   const [isSignUp, setIsSignUp] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
@@ -315,5 +315,13 @@ export default function Home() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HomeContent />
+    </Suspense>
   )
 }
