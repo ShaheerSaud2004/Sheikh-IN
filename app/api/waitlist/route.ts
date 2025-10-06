@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import nodemailer from 'nodemailer'
 import fs from 'fs'
 import path from 'path'
 
@@ -77,10 +78,9 @@ export async function POST(request: NextRequest) {
     waitlistEntries.push(waitlistEntry)
     saveWaitlistEntries(waitlistEntries)
 
-    // Send confirmation email using Resend
+    // Send confirmation email
     try {
-      // For testing: send to verified email address, but log the intended recipient
-      console.log(`📧 Intended recipient: ${email} for ${name}`)
+      console.log(`📧 Sending welcome email to ${email} for ${name}`)
       await sendWelcomeEmail(email, name)
     } catch (emailError) {
       console.error('Error sending email:', emailError)
@@ -112,104 +112,184 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Real email sending function using Resend
+// Email sending function that can send to anyone
 async function sendWelcomeEmail(email: string, name: string) {
   console.log(`📧 Sending welcome email to ${email} for ${name}`)
   
-  // Initialize Resend with API key
-  const resend = new Resend(process.env.RESEND_API_KEY || 're_6rEzNT3K_FXobwoatavkUdbrA6Z8CcaBy')
-  
+  // Try Gmail SMTP first (free and works with any email)
   try {
-    const { data, error } = await resend.emails.send({
-      from: 'Sheikh-Din <onboarding@resend.dev>',
-      to: ['shaheersaud2004s@gmail.com'], // Use verified email for testing
-      subject: `Welcome to Sheikh-Din Waitlist! 🕌 (Requested by: ${name} - ${email})`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 40px; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 28px;">Welcome to Sheikh-Din!</h1>
-            <p style="color: white; margin: 10px 0 0 0; font-size: 16px;">LinkedIn for Sheikhs</p>
-          </div>
-          
-          <div style="padding: 40px; background: white;">
-            <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
-              <p style="color: #92400e; margin: 0; font-size: 14px;">
-                <strong>📧 Test Email:</strong> This email was requested by <strong>${name}</strong> (${email}) 
-                but sent to you because the Resend account is in testing mode.
-              </p>
-            </div>
-            <h2 style="color: #374151; margin-bottom: 20px;">Assalamu alaikum ${name}!</h2>
-            
-            <p style="color: #6b7280; line-height: 1.6; margin-bottom: 20px;">
-              Thank you for joining the Sheikh-Din waitlist! We're excited to have you as part of our community.
-            </p>
-            
-            <p style="color: #6b7280; line-height: 1.6; margin-bottom: 30px;">
-              You'll be among the first to know when we launch, and you'll get exclusive early access to:
-            </p>
-            
-            <ul style="color: #6b7280; line-height: 1.8; margin-bottom: 30px;">
-              <li>🔍 Find qualified Islamic scholars in your area</li>
-              <li>📅 Book nikah ceremonies, khutbahs, and consultations</li>
-              <li>📚 Access Islamic knowledge and educational content</li>
-              <li>🤝 Connect with like-minded Muslims and professionals</li>
-            </ul>
-            
-            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
-              <h3 style="color: #166534; margin: 0 0 10px 0;">What's Next?</h3>
-              <p style="color: #166534; margin: 0; font-size: 14px;">
-                We'll notify you via email as soon as we launch. In the meantime, 
-                feel free to share Sheikh-Din with your friends and family!
-              </p>
-            </div>
-            
-            <p style="color: #6b7280; line-height: 1.6;">
-              If you have any questions, please don't hesitate to reach out to us.
-            </p>
-            
-            <p style="color: #6b7280; line-height: 1.6; margin-top: 30px;">
-              Barakallahu feek,<br>
-              The Sheikh-Din Team
-            </p>
-          </div>
-          
-          <div style="background: #f9fafb; padding: 20px; text-align: center; color: #6b7280; font-size: 14px;">
-            <p style="margin: 0;">© 2024 Sheikh-Din. All rights reserved.</p>
-          </div>
-        </div>
-      `,
-      text: `
-        Welcome to Sheikh-Din!
-        
-        Assalamu alaikum ${name}!
-        
-        Thank you for joining the Sheikh-Din waitlist! We're excited to have you as part of our community.
-        
-        You'll be among the first to know when we launch, and you'll get exclusive early access to:
-        - Find qualified Islamic scholars in your area
-        - Book nikah ceremonies, khutbahs, and consultations
-        - Access Islamic knowledge and educational content
-        - Connect with like-minded Muslims and professionals
-        
-        We'll notify you via email as soon as we launch. In the meantime, feel free to share Sheikh-Din with your friends and family!
-        
-        If you have any questions, please don't hesitate to reach out to us.
-        
-        Barakallahu feek,
-        The Sheikh-Din Team
-      `
+    const transporter = nodemailer.createTransporter({
+      service: 'gmail',
+      auth: {
+        user: process.env.GMAIL_USER || 'shaheersaud2004s@gmail.com',
+        pass: process.env.GMAIL_APP_PASSWORD || 'ilcw wblp qvpu kxqx'
+      }
     })
 
-    if (error) {
-      console.error('Resend error:', error)
-      throw error
+    const mailOptions = {
+      from: 'Sheikh-Din <shaheersaud2004s@gmail.com>',
+      to: email,
+      subject: 'Welcome to Sheikh-Din Waitlist! 🕌',
+      html: getEmailHTML(name),
+      text: getEmailText(name)
     }
 
-    console.log('✅ Email sent successfully:', data)
-    return data
-  } catch (error) {
-    console.error('Failed to send email:', error)
-    throw error
+    const info = await transporter.sendMail(mailOptions)
+    console.log('✅ Email sent successfully via Gmail SMTP:', info.messageId)
+    return info
+    
+  } catch (gmailError) {
+    console.log('❌ Gmail SMTP failed, trying Resend:', gmailError)
+    
+    // Fallback to Resend
+    try {
+      const resend = new Resend(process.env.RESEND_API_KEY || 're_6rEzNT3K_FXobwoatavkUdbrA6Z8CcaBy')
+      
+      const { data, error } = await resend.emails.send({
+        from: 'Sheikh-Din <onboarding@resend.dev>',
+        to: [email],
+        subject: 'Welcome to Sheikh-Din Waitlist! 🕌',
+        html: getEmailHTML(name),
+        text: getEmailText(name)
+      })
+
+      if (error) {
+        throw error
+      }
+
+      console.log('✅ Email sent successfully via Resend:', data)
+      return data
+      
+    } catch (resendError) {
+      console.log('❌ Resend also failed, using fallback method:', resendError)
+    
+      // Final fallback: Send email to your verified address with the intended recipient info
+      try {
+        const resend = new Resend(process.env.RESEND_API_KEY || 're_6rEzNT3K_FXobwoatavkUdbrA6Z8CcaBy')
+        
+        const { data, error } = await resend.emails.send({
+          from: 'Sheikh-Din <onboarding@resend.dev>',
+          to: ['shaheersaud2004s@gmail.com'],
+          subject: `📧 Sheikh-Din Waitlist: ${name} (${email}) signed up!`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 40px; text-align: center;">
+                <h1 style="color: white; margin: 0; font-size: 28px;">New Waitlist Signup!</h1>
+                <p style="color: white; margin: 10px 0 0 0; font-size: 16px;">Sheikh-Din</p>
+              </div>
+              
+              <div style="padding: 40px; background: white;">
+                <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                  <p style="color: #92400e; margin: 0; font-size: 14px;">
+                    <strong>📧 Forward this email to:</strong> <strong>${name}</strong> (${email})
+                  </p>
+                </div>
+                <h2 style="color: #374151; margin-bottom: 20px;">New Signup Details:</h2>
+                <p style="color: #6b7280; margin-bottom: 10px;"><strong>Name:</strong> ${name}</p>
+                <p style="color: #6b7280; margin-bottom: 10px;"><strong>Email:</strong> ${email}</p>
+                <p style="color: #6b7280; margin-bottom: 20px;"><strong>Date:</strong> ${new Date().toLocaleString()}</p>
+                
+                <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
+                
+                <h3 style="color: #374151; margin-bottom: 20px;">Welcome Email for ${name}:</h3>
+                
+                ${getEmailHTML(name)}
+              </div>
+              
+              <div style="background: #f9fafb; padding: 20px; text-align: center; color: #6b7280; font-size: 14px;">
+                <p style="margin: 0;">© 2024 Sheikh-Din. All rights reserved.</p>
+              </div>
+            </div>
+          `
+        })
+
+        if (error) {
+          throw error
+        }
+
+        console.log('✅ Fallback email sent successfully:', data)
+        return data
+        
+      } catch (fallbackError) {
+        console.error('❌ All email methods failed:', fallbackError)
+        throw fallbackError
+      }
+    }
   }
 }
 
+// Helper function to generate email HTML
+function getEmailHTML(name: string) {
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 40px; text-align: center;">
+        <h1 style="color: white; margin: 0; font-size: 28px;">Welcome to Sheikh-Din!</h1>
+        <p style="color: white; margin: 10px 0 0 0; font-size: 16px;">LinkedIn for Sheikhs</p>
+      </div>
+      
+      <div style="padding: 40px; background: white;">
+        <h2 style="color: #374151; margin-bottom: 20px;">Assalamu alaikum ${name}!</h2>
+        
+        <p style="color: #6b7280; line-height: 1.6; margin-bottom: 20px;">
+          Thank you for joining the Sheikh-Din waitlist! We're excited to have you as part of our community.
+        </p>
+        
+        <p style="color: #6b7280; line-height: 1.6; margin-bottom: 30px;">
+          You'll be among the first to know when we launch, and you'll get exclusive early access to:
+        </p>
+        
+        <ul style="color: #6b7280; line-height: 1.8; margin-bottom: 30px;">
+          <li>🔍 Find qualified Islamic scholars in your area</li>
+          <li>📅 Book nikah ceremonies, khutbahs, and consultations</li>
+          <li>📚 Access Islamic knowledge and educational content</li>
+          <li>🤝 Connect with like-minded Muslims and professionals</li>
+        </ul>
+        
+        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+          <h3 style="color: #166534; margin: 0 0 10px 0;">What's Next?</h3>
+          <p style="color: #166534; margin: 0; font-size: 14px;">
+            We'll notify you via email as soon as we launch. In the meantime, 
+            feel free to share Sheikh-Din with your friends and family!
+          </p>
+        </div>
+        
+        <p style="color: #6b7280; line-height: 1.6;">
+          If you have any questions, please don't hesitate to reach out to us.
+        </p>
+        
+        <p style="color: #6b7280; line-height: 1.6; margin-top: 30px;">
+          Barakallahu feek,<br>
+          The Sheikh-Din Team
+        </p>
+      </div>
+      
+      <div style="background: #f9fafb; padding: 20px; text-align: center; color: #6b7280; font-size: 14px;">
+        <p style="margin: 0;">© 2024 Sheikh-Din. All rights reserved.</p>
+      </div>
+    </div>
+  `
+}
+
+// Helper function to generate email text
+function getEmailText(name: string) {
+  return `
+    Welcome to Sheikh-Din!
+    
+    Assalamu alaikum ${name}!
+    
+    Thank you for joining the Sheikh-Din waitlist! We're excited to have you as part of our community.
+    
+    You'll be among the first to know when we launch, and you'll get exclusive early access to:
+    - Find qualified Islamic scholars in your area
+    - Book nikah ceremonies, khutbahs, and consultations
+    - Access Islamic knowledge and educational content
+    - Connect with like-minded Muslims and professionals
+    
+    We'll notify you via email as soon as we launch. In the meantime, feel free to share Sheikh-Din with your friends and family!
+    
+    If you have any questions, please don't hesitate to reach out to us.
+    
+    Barakallahu feek,
+    The Sheikh-Din Team
+  `
+}

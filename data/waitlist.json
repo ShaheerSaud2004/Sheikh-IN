@@ -8,5 +8,25 @@
     "interest": "General",
     "message": "Testing fixed email and storage",
     "createdAt": "2025-10-06T20:10:47.358Z"
+  },
+  {
+    "id": "etz941z21pi",
+    "name": "Test Gmail",
+    "email": "shaheersaud@gmail.com",
+    "phone": "123-456-7890",
+    "location": "Test City",
+    "interest": "General",
+    "message": "Testing Gmail SMTP functionality",
+    "createdAt": "2025-10-06T20:25:22.419Z"
+  },
+  {
+    "id": "yat9h4a7dk",
+    "name": "Test User",
+    "email": "test@example.com",
+    "phone": "123-456-7890",
+    "location": "Test City",
+    "interest": "General",
+    "message": "Testing with any email address",
+    "createdAt": "2025-10-06T20:25:28.225Z"
   }
 ]
