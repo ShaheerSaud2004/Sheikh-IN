@@ -122,7 +122,7 @@ async function sendWelcomeEmail(email: string, name: string) {
       service: 'gmail',
       auth: {
         user: process.env.GMAIL_USER || 'shaheersaud2004s@gmail.com',
-        pass: process.env.GMAIL_APP_PASSWORD || 'ilcw wblp qvpu kxqx'
+        pass: process.env.app_password || 'ilcw wblp qvpu kxqx'
       }
     })
 
