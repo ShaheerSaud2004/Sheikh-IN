@@ -303,7 +303,7 @@ export default function WaitlistPage() {
                     <span className="text-blue-600 font-bold">A</span>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900">Ashiyam A.</h4>
+                    <h4 className="font-semibold text-gray-900">Darul Islah Member</h4>
                     <p className="text-sm text-gray-500">Board Member, Darul Islah</p>
                   </div>
                 </div>
